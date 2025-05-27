@@ -26,13 +26,15 @@
           <!-- 导航按钮 -->
           <nav class="header-nav">
             <button
-              v-for="item in navItems"
+              v-for="(item, index) in navItems"
               :key="item.key"
               @click="setCurrentView(item.key as any)"
               :class="['nav-button', { 'active': currentView === item.key }]"
+              :title="`${item.label} (Ctrl+${index + 1})`"
             >
               <i :class="item.icon"></i>
               <span>{{ item.label }}</span>
+              <kbd class="shortcut-hint">{{ index + 1 }}</kbd>
             </button>
           </nav>
 
@@ -105,14 +107,16 @@
 
         <!-- 主要视图 -->
         <div v-else class="view-container">
-          <!-- 社群中心视图 -->
-          <CommunityView v-if="currentView === 'community'" />
-          
-          <!-- 聊天室视图 -->
-          <ChatView v-else-if="currentView === 'chat'" />
-          
-          <!-- 设置视图 -->
-          <SettingsView v-else-if="currentView === 'settings'" />
+          <Transition name="view-fade" mode="out-in">
+            <!-- 社群中心视图 -->
+            <CommunityView v-if="currentView === 'community'" key="community" />
+            
+            <!-- 聊天室视图 -->
+            <ChatView v-else-if="currentView === 'chat'" key="chat" />
+            
+            <!-- 设置视图 -->
+            <SettingsView v-else-if="currentView === 'settings'" key="settings" />
+          </Transition>
         </div>
       </main>
 
@@ -153,17 +157,15 @@ const showNotifications = ref(false);
 const refreshInterval = ref<number | null>(null);
 
 // 计算属性
-const {
-  isConnected,
-  isLoading,
-  currentView,
-  isDarkMode,
-  notifications,
-  unreadNotifications,
-  connectionChecking,
-  settings,
-  navItems
-} = appStore;
+const isConnected = computed(() => appStore.isConnected);
+const isLoading = computed(() => appStore.isLoading);
+const currentView = computed(() => appStore.currentView);
+const isDarkMode = computed(() => appStore.isDarkMode);
+const notifications = computed(() => appStore.notifications);
+const unreadNotifications = computed(() => appStore.unreadNotifications);
+const connectionChecking = computed(() => appStore.connectionChecking);
+const settings = computed(() => appStore.settings);
+const navItems = appStore.navItems;
 
 const {
   stats: communityStats,
@@ -212,12 +214,52 @@ const setupAutoRefresh = () => {
     clearInterval(refreshInterval.value);
   }
 
-  if (settings.autoRefresh && isConnected.value) {
+  if (settings.value.autoRefresh && isConnected.value) {
     refreshInterval.value = setInterval(() => {
       if (isConnected.value) {
         refreshData();
       }
-    }, settings.refreshInterval);
+    }, settings.value.refreshInterval);
+  }
+};
+
+// 键盘快捷键处理
+const handleKeydown = (e: KeyboardEvent) => {
+  // 检查是否在输入框中
+  const target = e.target as HTMLElement;
+  if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
+    return;
+  }
+
+  // 处理快捷键
+  if (e.ctrlKey || e.metaKey) {
+    switch (e.key) {
+      case '1':
+        e.preventDefault();
+        setCurrentView('community');
+        break;
+      case '2':
+        e.preventDefault();
+        setCurrentView('chat');
+        break;
+      case '3':
+        e.preventDefault();
+        setCurrentView('settings');
+        break;
+      case 'r':
+        e.preventDefault();
+        refreshData();
+        break;
+      case 'd':
+        e.preventDefault();
+        toggleTheme();
+        break;
+    }
+  }
+  
+  // ESC键关闭通知面板
+  if (e.key === 'Escape') {
+    showNotifications.value = false;
   }
 };
 
@@ -237,6 +279,9 @@ onMounted(async () => {
     setupAutoRefresh();
   });
 
+  // 添加键盘事件监听
+  document.addEventListener('keydown', handleKeydown);
+
   // 点击外部关闭通知面板
   document.addEventListener('click', (e) => {
     const target = e.target as HTMLElement;
@@ -251,6 +296,9 @@ onUnmounted(() => {
   if (refreshInterval.value) {
     clearInterval(refreshInterval.value);
   }
+  
+  // 移除事件监听器
+  document.removeEventListener('keydown', handleKeydown);
 });
 </script>
 
@@ -624,6 +672,50 @@ onUnmounted(() => {
   margin-right: 1rem;
 }
 
+/* 页面切换动画 */
+.view-fade-enter-active,
+.view-fade-leave-active {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.view-fade-enter-from {
+  opacity: 0;
+  transform: translateX(20px);
+}
+
+.view-fade-leave-to {
+  opacity: 0;
+  transform: translateX(-20px);
+}
+
+/* 导航按钮样式优化 */
+.nav-button {
+  position: relative;
+  overflow: hidden;
+}
+
+.shortcut-hint {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: rgba(102, 126, 234, 0.8);
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  font-family: inherit;
+}
+
+.nav-button:hover .shortcut-hint {
+  opacity: 1;
+}
+
 /* 响应式设计 */
 @media (max-width: 768px) {
   .app-main {
@@ -644,6 +736,10 @@ onUnmounted(() => {
   .notifications-panel {
     width: calc(100vw - 2rem);
     right: 1rem;
+  }
+  
+  .shortcut-hint {
+    display: none;
   }
 }
 </style> 

@@ -10,7 +10,7 @@ import uvicorn
 from datetime import datetime
 
 # 导入API路由
-from api.v1 import community, commands
+from api.v1 import community, commands, chat
 
 # 创建FastAPI应用实例
 app = FastAPI(
@@ -38,6 +38,7 @@ app.add_middleware(
 # 注册API路由
 app.include_router(community.router, prefix="/api/v1")
 app.include_router(commands.router, prefix="/api/v1")
+app.include_router(chat.router, prefix="/api/v1")
 
 # 根路径 - 健康检查接口
 @app.get("/")

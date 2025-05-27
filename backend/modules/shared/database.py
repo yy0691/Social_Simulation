@@ -92,6 +92,38 @@ class Event(Base):
     def __repr__(self):
         return f"<Event(id={self.id}, type={self.event_type}, description={self.description})>"
 
+class User(Base):
+    """
+    用户表
+    存储游戏用户信息
+    """
+    __tablename__ = "users"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String(50), unique=True, index=True, comment="用户名")
+    display_name = Column(String(100), comment="显示名称")
+    avatar_url = Column(String(255), comment="头像URL")
+    created_at = Column(DateTime, default=datetime.utcnow, comment="注册时间")
+    last_login = Column(DateTime, comment="最后登录时间")
+    is_active = Column(Boolean, default=True, comment="是否激活")
+
+class ChatMessage(Base):
+    """
+    聊天消息表
+    存储聊天记录
+    """
+    __tablename__ = "chat_messages"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    content = Column(Text, comment="消息内容")
+    sender_type = Column(String(20), index=True, comment="发送者类型：user/ai/system")
+    sender_name = Column(String(100), comment="发送者名称")
+    timestamp = Column(DateTime, default=datetime.utcnow, comment="发送时间")
+    is_system = Column(Boolean, default=False, comment="是否为系统消息")
+    
+    def __repr__(self):
+        return f"<ChatMessage(id={self.id}, sender={self.sender_name}, type={self.sender_type})>"
+
 # 导出所有模型
 __all__ = [
     "engine",
@@ -101,5 +133,7 @@ __all__ = [
     "init_db",
     "CommunityStats",
     "Agent", 
-    "Event"
+    "Event",
+    "User",
+    "ChatMessage"
 ] 
