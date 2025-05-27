@@ -1,0 +1,13 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Command requirements
+- Commands must be used in Windows PowerShell
+- File operations must comply with command specifications
+# Production requirements
+- Develop strictly in accordance with the documentation
+- Do not modify or delete developed functions during development
+
+- Mark each completed function in the development document

@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI社群模拟小游戏 - UI预览</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- 游戏背景 -->
+    <div class="game-background">
+        <div class="stars"></div>
+        <div class="floating-particles"></div>
+    </div>
+
+    <!-- 导航栏 -->
+    <nav class="game-nav">
+        <div class="nav-container">
+            <div class="nav-tabs">
+                <button class="nav-tab active" data-tab="community">
+                    <i class="fas fa-home"></i>
+                    <span>社群中心</span>
+                </button>
+                <button class="nav-tab" data-tab="chat">
+                    <i class="fas fa-comments"></i>
+                    <span>聊天室</span>
+                </button>
+                <button class="nav-tab" data-tab="settings">
+                    <i class="fas fa-cog"></i>
+                    <span>设置</span>
+                </button>
+            </div>
+            <div class="nav-status">
+                <div class="online-indicator">
+                    <i class="fas fa-circle"></i>
+                    <span>在线</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主要内容区域 -->
+    <main class="main-container">
+        <!-- 社群中心页面 -->
+        <div class="tab-content active" id="community-tab">
+            <div class="game-display">
+                <!-- 社群动态区域 -->
+                <div class="activity-section glass-panel">
+                    <div class="section-header">
+                        <h3 class="section-title">
+                            <i class="fas fa-bolt"></i>
+                            社群动态
+                        </h3>
+                        <div class="section-actions">
+                            <button class="icon-btn">
+                                <i class="fas fa-refresh"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="activity-feed">
+                        <div class="activity-item glow-card">
+                            <div class="activity-icon fire">
+                                <i class="fas fa-fire"></i>
+                            </div>
+                            <div class="activity-content">
+                                <p class="activity-text">玩家发起了一场篝火晚会</p>
+                                <span class="activity-time">
+                                    <i class="fas fa-clock"></i>
+                                    2分钟前
+                                </span>
+                            </div>
+                            <div class="activity-effect"></div>
+                        </div>
+                        <div class="activity-item glow-card">
+                            <div class="activity-icon star">
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <div class="activity-content">
+                                <p class="activity-text">社群活跃度提升了10点</p>
+                                <span class="activity-time">
+                                    <i class="fas fa-clock"></i>
+                                    3分钟前
+                                </span>
+                            </div>
+                            <div class="activity-effect"></div>
+                        </div>
+                        <div class="activity-item glow-card">
+                            <div class="activity-icon users">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="activity-content">
+                                <p class="activity-text">新成员加入了社群</p>
+                                <span class="activity-time">
+                                    <i class="fas fa-clock"></i>
+                                    5分钟前
+                                </span>
+                            </div>
+                            <div class="activity-effect"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 社群统计面板 -->
+                <div class="stats-section glass-panel">
+                    <div class="section-header">
+                        <h3 class="section-title">
+                            <i class="fas fa-chart-line"></i>
+                            社群状态
+                        </h3>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-card neon-card">
+                            <div class="stat-icon population">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-value">3</div>
+                                <div class="stat-label">社群人口</div>
+                            </div>
+                            <div class="stat-glow"></div>
+                        </div>
+                        <div class="stat-card neon-card">
+                            <div class="stat-icon energy">
+                                <i class="fas fa-bolt"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-value">85%</div>
+                                <div class="stat-label">活跃度</div>
+                            </div>
+                            <div class="stat-glow"></div>
+                        </div>
+                        <div class="stat-card neon-card">
+                            <div class="stat-icon happiness">
+                                <i class="fas fa-heart"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-value">92%</div>
+                                <div class="stat-label">幸福指数</div>
+                            </div>
+                            <div class="stat-glow"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 玩家控制面板 -->
+            <section class="control-panel glass-panel">
+                <div class="section-header">
+                    <h3 class="section-title">
+                        <i class="fas fa-gamepad"></i>
+                        指令控制台
+                    </h3>
+                </div>
+                <div class="input-container">
+                    <div class="input-wrapper">
+                        <input type="text" class="game-input" placeholder="输入你的指令，影响AI社群..." value="">
+                        <div class="input-glow"></div>
+                    </div>
+                    <button class="game-btn primary">
+                        <i class="fas fa-paper-plane"></i>
+                        <span>发送</span>
+                        <div class="btn-glow"></div>
+                    </button>
+                </div>
+                
+                <!-- 状态指示器 -->
+                <div class="status-panel">
+                    <div class="status-indicator processing">
+                        <div class="status-icon">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <span>AI正在思考中...</span>
+                        <div class="processing-dots">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- 聊天室页面 -->
+        <div class="tab-content" id="chat-tab">
+            <div class="chat-page">
+                <div class="chat-container glass-panel">
+                    <div class="chat-header">
+                        <h3 class="section-title">
+                            <i class="fas fa-comments"></i>
+                            社群聊天室
+                        </h3>
+                        <div class="chat-status">
+                            <span class="online-count">
+                                <i class="fas fa-circle online"></i>
+                                3人在线
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="chat-messages">
+                        <div class="chat-message">
+                            <div class="avatar-container">
+                                <div class="avatar farmer-a">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <div class="avatar-glow"></div>
+                            </div>
+                            <div class="message-content">
+                                <div class="message-header">
+                                    <span class="sender-name">居民A</span>
+                                    <span class="message-time">
+                                        <i class="fas fa-clock"></i>
+                                        刚刚
+                                    </span>
+                                </div>
+                                <div class="chat-bubble user">
+                                    太棒了！篝火晚会真是个好主意，我已经开始准备零食了！
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="chat-message">
+                            <div class="avatar-container">
+                                <div class="avatar farmer-b">
+                                    <i class="fas fa-user-friends"></i>
+                                </div>
+                                <div class="avatar-glow"></div>
+                            </div>
+                            <div class="message-content">
+                                <div class="message-header">
+                                    <span class="sender-name">居民B</span>
+                                    <span class="message-time">
+                                        <i class="fas fa-clock"></i>
+                                        1分钟前
+                                    </span>
+                                </div>
+                                <div class="chat-bubble user">
+                                    我来准备一些音乐吧，让大家一起跳舞！
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="chat-message ai-message">
+                            <div class="avatar-container">
+                                <div class="avatar ai-avatar">
+                                    <i class="fas fa-robot"></i>
+                                </div>
+                                <div class="avatar-glow ai"></div>
+                            </div>
+                            <div class="message-content">
+                                <div class="message-header">
+                                    <span class="sender-name ai">AI助手</span>
+                                    <span class="message-time">
+                                        <i class="fas fa-clock"></i>
+                                        2分钟前
+                                    </span>
+                                </div>
+                                <div class="chat-bubble ai">
+                                    社群成员们对篝火晚会非常兴奋，活跃度显著提升！
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 聊天输入区域 -->
+                <div class="chat-input-panel glass-panel">
+                    <div class="chat-input-container">
+                        <div class="input-wrapper">
+                            <input type="text" class="chat-input" placeholder="输入消息..." value="">
+                            <div class="input-glow"></div>
+                        </div>
+                        <button class="game-btn primary chat-send">
+                            <i class="fas fa-paper-plane"></i>
+                            <div class="btn-glow"></div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 设置页面 -->
+        <div class="tab-content" id="settings-tab">
+            <div class="settings-page">
+                <div class="settings-panel glass-panel">
+                    <div class="section-header">
+                        <h3 class="section-title">
+                            <i class="fas fa-cog"></i>
+                            游戏设置
+                        </h3>
+                    </div>
+                    
+                    <div class="settings-content">
+                        <div class="setting-group">
+                            <h4 class="setting-title">
+                                <i class="fas fa-palette"></i>
+                                界面设置
+                            </h4>
+                            <div class="setting-item">
+                                <label>主题模式</label>
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="theme-toggle">
+                                    <label for="theme-toggle"></label>
+                                </div>
+                            </div>
+                            <div class="setting-item">
+                                <label>特效强度</label>
+                                <div class="slider-container">
+                                    <input type="range" class="game-slider" min="0" max="100" value="80">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="setting-group">
+                            <h4 class="setting-title">
+                                <i class="fas fa-brain"></i>
+                                AI设置
+                            </h4>
+                            <div class="setting-item">
+                                <label>AI响应速度</label>
+                                <div class="slider-container">
+                                    <input type="range" class="game-slider" min="1" max="10" value="5">
+                                </div>
+                            </div>
+                            <div class="setting-item">
+                                <label>创造性水平</label>
+                                <div class="slider-container">
+                                    <input type="range" class="game-slider" min="0" max="100" value="70">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // 标签页切换功能
+        document.querySelectorAll('.nav-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                const targetTab = this.dataset.tab;
+                
+                // 移除所有活跃状态
+                document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                
+                // 添加活跃状态
+                this.classList.add('active');
+                document.getElementById(targetTab + '-tab').classList.add('active');
+            });
+        });
+
+        // 发送按钮功能
+        function setupSendButton(inputSelector, buttonSelector) {
+            const button = document.querySelector(buttonSelector);
+            const input = document.querySelector(inputSelector);
+            
+            if (button && input) {
+                button.addEventListener('click', function() {
+                    if (input.value.trim()) {
+                        // 模拟发送动画
+                        const originalContent = this.innerHTML;
+                        this.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>发送中...</span>';
+                        this.disabled = true;
+                        
+                        setTimeout(() => {
+                            this.innerHTML = originalContent;
+                            this.disabled = false;
+                            input.value = '';
+                        }, 1500);
+                    }
+                });
+
+                // 回车发送
+                input.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        button.click();
+                    }
+                });
+            }
+        }
+
+        // 设置发送按钮
+        setupSendButton('.game-input', '.game-btn.primary');
+        setupSendButton('.chat-input', '.chat-send');
+
+        // 刷新按钮动画
+        document.querySelector('.icon-btn').addEventListener('click', function() {
+            const icon = this.querySelector('i');
+            icon.style.animation = 'spin 1s linear';
+            setTimeout(() => {
+                icon.style.animation = '';
+            }, 1000);
+        });
+
+        // 主题切换
+        document.getElementById('theme-toggle').addEventListener('change', function() {
+            document.body.classList.toggle('dark-theme', this.checked);
+        });
+
+        // 滑块交互
+        document.querySelectorAll('.game-slider').forEach(slider => {
+            slider.addEventListener('input', function() {
+                const value = this.value;
+                const max = this.max;
+                const percentage = (value / max) * 100;
+                this.style.background = `linear-gradient(to right, #00d4ff 0%, #00d4ff ${percentage}%, #333 ${percentage}%, #333 100%)`;
+            });
+        });
+
+        // 初始化滑块样式
+        document.querySelectorAll('.game-slider').forEach(slider => {
+            slider.dispatchEvent(new Event('input'));
+        });
+
+        // 添加粒子动画
+        function createParticles() {
+            const particlesContainer = document.querySelector('.floating-particles');
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 20 + 's';
+                particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // 创建星星背景
+        function createStars() {
+            const starsContainer = document.querySelector('.stars');
+            for (let i = 0; i < 100; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.animationDelay = Math.random() * 3 + 's';
+                starsContainer.appendChild(star);
+            }
+        }
+
+        // 初始化背景效果
+        createParticles();
+        createStars();
+
+        // 添加键盘快捷键
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey || e.metaKey) {
+                switch(e.key) {
+                    case '1':
+                        e.preventDefault();
+                        document.querySelector('[data-tab="community"]').click();
+                        break;
+                    case '2':
+                        e.preventDefault();
+                        document.querySelector('[data-tab="chat"]').click();
+                        break;
+                    case '3':
+                        e.preventDefault();
+                        document.querySelector('[data-tab="settings"]').click();
+                        break;
+                }
+            }
+        });
+    </script>
+</body>
+</html> 
