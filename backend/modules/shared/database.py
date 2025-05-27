@@ -55,12 +55,12 @@ class CommunityStats(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     population = Column(Integer, default=0, comment="社群人口数量")
-    happiness_level = Column(Float, default=50.0, comment="幸福指数(0-100)")
-    activity_level = Column(Float, default=50.0, comment="活跃度(0-100)")
-    created_at = Column(DateTime, default=datetime.utcnow, comment="创建时间")
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment="更新时间")
+    happiness = Column(Float, default=50.0, comment="幸福指数(0-100)")
+    activity = Column(Float, default=50.0, comment="活跃度(0-100)")
+    resources = Column(Float, default=100.0, comment="资源量")
+    last_updated = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment="最后更新时间")
 
-class Agents(Base):
+class Agent(Base):
     """
     AI智能体表
     存储社群中的AI居民信息
@@ -70,13 +70,13 @@ class Agents(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(50), unique=True, index=True, comment="智能体名称")
     personality = Column(Text, comment="性格描述")
+    role = Column(String(50), default="居民", comment="角色")
     mood = Column(Float, default=50.0, comment="当前心情(0-100)")
-    status = Column(String(20), default="active", comment="状态：active/inactive/busy")
-    last_action = Column(Text, comment="最后一次行动描述")
+    activity_level = Column(Float, default=50.0, comment="活跃度")
     created_at = Column(DateTime, default=datetime.utcnow, comment="创建时间")
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment="更新时间")
+    last_active = Column(DateTime, default=datetime.utcnow, comment="最后活跃时间")
 
-class Events(Base):
+class Event(Base):
     """
     事件记录表
     存储社群中发生的各种事件
@@ -85,15 +85,12 @@ class Events(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     event_type = Column(String(30), index=True, comment="事件类型：user_command/ai_action/system_event")
-    title = Column(String(100), comment="事件标题")
     description = Column(Text, comment="事件详细描述")
-    participants = Column(Text, comment="参与者列表(JSON格式)")
-    impact_happiness = Column(Float, default=0.0, comment="对幸福指数的影响")
-    impact_activity = Column(Float, default=0.0, comment="对活跃度的影响")
-    created_at = Column(DateTime, default=datetime.utcnow, comment="事件发生时间")
+    impact = Column(Text, comment="影响数据(JSON格式)")
+    timestamp = Column(DateTime, default=datetime.utcnow, comment="事件发生时间")
     
     def __repr__(self):
-        return f"<Event(id={self.id}, type={self.event_type}, title={self.title})>"
+        return f"<Event(id={self.id}, type={self.event_type}, description={self.description})>"
 
 # 导出所有模型
 __all__ = [
@@ -103,6 +100,6 @@ __all__ = [
     "get_db",
     "init_db",
     "CommunityStats",
-    "Agents", 
-    "Events"
+    "Agent", 
+    "Event"
 ] 
