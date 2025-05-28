@@ -27,7 +27,7 @@ export const useAppStore = defineStore('app', () => {
     compactMode: false
   });
 
-  // 导航项目配置
+  // 导航项目配置 - 按照人类使用逻辑排序
   const navItems: NavItem[] = [
     {
       key: 'community',

@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI社群模拟小游戏 - LLM配置测试</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #1f2937;
+            margin-bottom: 30px;
+        }
+        
+        .status-section {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #6b7280;
+        }
+        
+        .status-dot.connected {
+            background: #10b981;
+        }
+        
+        .status-dot.error {
+            background: #ef4444;
+        }
+        
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+            transition: all 0.2s;
+        }
+        
+        button:hover:not(:disabled) {
+            background: #2563eb;
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .test-results {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 15px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .config-section {
+            background: #1f2937;
+            color: #f9fafb;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .config-section h3 {
+            margin-top: 0;
+            color: #60a5fa;
+        }
+        
+        .config-section pre {
+            background: #374151;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 AI社群模拟小游戏 - LLM配置测试</h1>
+        
+        <div class="config-section">
+            <h3>📋 配置说明</h3>
+            <p>请在 <strong>backend/.env</strong> 文件中配置以下内容：</p>
+            <pre>
+# OpenAI API 配置 (必需)
+OPENAI_API_KEY=your-api-key-here
+LLM_MODEL=gpt-3.5-turbo
+OPENAI_BASE_URL=https://api.openai.com/v1
+
+# 可选配置
+LLM_TEMPERATURE=0.7
+LLM_MAX_TOKENS=1500
+LLM_TIMEOUT=30</pre>
+        </div>
+        
+        <div class="status-section">
+            <h3>🔗 LLM连接状态</h3>
+            <div class="status-indicator">
+                <div id="statusDot" class="status-dot"></div>
+                <span id="statusText">检查中...</span>
+            </div>
+            
+            <button onclick="checkStatus()">刷新状态</button>
+            <button onclick="runFullTest()">运行完整测试</button>
+            
+            <div id="testResults" class="test-results" style="display: none;"></div>
+        </div>
+        
+        <div class="status-section">
+            <h3>🎮 游戏功能测试</h3>
+            <button onclick="testCommand()">测试指令解析</button>
+            <button onclick="testAgentChat()">测试AI对话</button>
+            <button onclick="openDocs()">查看API文档</button>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://127.0.0.1:8000/api/v1';
+        
+        // 检查LLM状态
+        async function checkStatus() {
+            const statusDot = document.getElementById('statusDot');
+            const statusText = document.getElementById('statusText');
+            
+            try {
+                statusText.textContent = '检查中...';
+                statusDot.className = 'status-dot';
+                
+                const response = await fetch(`${API_BASE}/system/llm/status`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const { config_valid, client_initialized, provider, model } = data.data;
+                    
+                    if (config_valid && client_initialized) {
+                        statusDot.className = 'status-dot connected';
+                        statusText.textContent = `✅ LLM已连接 (${provider} - ${model})`;
+                    } else if (config_valid) {
+                        statusDot.className = 'status-dot error';
+                        statusText.textContent = '⚠️ 配置有效但未连接';
+                    } else {
+                        statusDot.className = 'status-dot error';
+                        statusText.textContent = '❌ LLM配置无效';
+                    }
+                } else {
+                    statusDot.className = 'status-dot error';
+                    statusText.textContent = `❌ 检查失败: ${data.error}`;
+                }
+            } catch (error) {
+                statusDot.className = 'status-dot error';
+                statusText.textContent = `❌ 网络错误: ${error.message}`;
+            }
+        }
+        
+        // 运行完整测试
+        async function runFullTest() {
+            const resultsDiv = document.getElementById('testResults');
+            resultsDiv.style.display = 'block';
+            resultsDiv.textContent = '🔄 开始测试...\n';
+            
+            try {
+                const response = await fetch(`${API_BASE}/system/llm/test`, {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    const result = data.data;
+                    let output = '';
+                    
+                    output += `📊 测试结果摘要:\n`;
+                    output += `  配置检查: ${result.config_check ? '✅' : '❌'}\n`;
+                    output += `  客户端初始化: ${result.client_init ? '✅' : '❌'}\n`;
+                    output += `  API调用: ${result.api_call ? '✅' : '❌'}\n`;
+                    output += `  指令解析: ${result.command_parse ? '✅' : '❌'}\n`;
+                    output += `  AI对话: ${result.agent_response ? '✅' : '❌'}\n\n`;
+                    
+                    output += `📝 详细日志:\n`;
+                    result.logs.forEach(log => output += `  ${log}\n`);
+                    
+                    if (result.errors.length > 0) {
+                        output += `\n❌ 错误信息:\n`;
+                        result.errors.forEach(error => output += `  ${error}\n`);
+                    }
+                    
+                    resultsDiv.textContent = output;
+                } else {
+                    resultsDiv.textContent = `❌ 测试失败: ${data.error}`;
+                }
+            } catch (error) {
+                resultsDiv.textContent = `❌ 测试异常: ${error.message}`;
+            }
+        }
+        
+        // 测试指令解析
+        async function testCommand() {
+            try {
+                const response = await fetch(`${API_BASE}/commands/parse?command=组织一次社区聚会`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(`✅ 指令解析成功！\n类型: ${data.data.command_type}\n动作: ${data.data.action}\n置信度: ${data.data.confidence}`);
+                } else {
+                    alert(`❌ 指令解析失败`);
+                }
+            } catch (error) {
+                alert(`❌ 网络错误: ${error.message}`);
+            }
+        }
+        
+        // 测试AI对话
+        async function testAgentChat() {
+            alert('🤖 AI对话功能需要在游戏界面中测试');
+        }
+        
+        // 打开API文档
+        function openDocs() {
+            window.open('http://127.0.0.1:8000/docs', '_blank');
+        }
+        
+        // 页面加载时自动检查状态
+        document.addEventListener('DOMContentLoaded', checkStatus);
+        
+        // 每30秒自动刷新状态
+        setInterval(checkStatus, 30000);
+    </script>
+</body>
+</html> 

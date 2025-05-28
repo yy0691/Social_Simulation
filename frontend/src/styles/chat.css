@@ -1,0 +1,79 @@
+ /* 聊天头部 */
+.chat-header {
+    flex-shrink: 0;
+    padding: 0.15rem 0.75rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 14px;
+    max-height: 14px;
+}
+/*聊天信息*/
+.chat-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.chat-avatar {
+    width: 20px;
+    height: 20px;
+    background: linear-gradient(135deg, var(--neon-blue), var(--electric-blue));
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 0.7rem;
+    box-shadow: 0 0 8px rgba(0, 212, 255, 0.3);
+    position: relative;
+}
+
+.chat-avatar::after {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    background: linear-gradient(135deg, var(--neon-blue), var(--electric-blue));
+    border-radius: var(--radius-sm);
+    z-index: -1;
+    opacity: 0.2;
+    filter: blur(4px);
+}
+
+.chat-details {
+    flex: 1;
+}
+
+.chat-title {
+    font-size: 0.5rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin: 0;
+    line-height: 1;
+}
+
+.chat-subtitle {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 0.6rem;
+    line-height: 1;
+    margin-top: 1px;
+}
+
+.header-actions {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.header-actions .icon-button {
+    padding: 0.25rem;
+    min-width: 20px;
+    height: 20px;
+    font-size: 0.7rem;
+}

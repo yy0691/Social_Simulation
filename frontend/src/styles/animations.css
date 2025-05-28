@@ -1,0 +1,751 @@
+/* 动画效果样式 */
+
+/* 基础动画 */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes fadeInRight {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideInUp {
+    from {
+        transform: translateY(100%);
+    }
+    to {
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInDown {
+    from {
+        transform: translateY(-100%);
+    }
+    to {
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInLeft {
+    from {
+        transform: translateX(-100%);
+    }
+    to {
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+    }
+    to {
+        transform: translateX(0);
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes scaleOut {
+    from {
+        opacity: 1;
+        transform: scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+}
+
+/* 霓虹发光动画 */
+@keyframes neonGlow {
+    0%, 100% {
+        box-shadow: 0 0 5px var(--neon-blue);
+    }
+    50% {
+        box-shadow: 0 0 20px var(--neon-blue), 0 0 30px var(--neon-blue);
+    }
+}
+
+@keyframes neonPulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.8;
+        transform: scale(1.05);
+    }
+}
+
+@keyframes neonFlicker {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.8;
+    }
+    75% {
+        opacity: 0.9;
+    }
+}
+
+/* 粒子动画 */
+@keyframes particleFloat {
+    0% {
+        transform: translateY(100vh) rotate(0deg);
+        opacity: 0;
+    }
+    10% {
+        opacity: 0.6;
+    }
+    90% {
+        opacity: 0.6;
+    }
+    100% {
+        transform: translateY(-100px) rotate(360deg);
+        opacity: 0;
+    }
+}
+
+/* 光扫动画 */
+@keyframes lightSweep {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+/* 霓虹边框动画 */
+@keyframes neonBorder {
+    0%, 100% {
+        border-color: rgba(0, 212, 255, 0.3);
+        box-shadow: 0 0 5px rgba(0, 212, 255, 0.3);
+    }
+    25% {
+        border-color: rgba(139, 92, 246, 0.8);
+        box-shadow: 0 0 25px rgba(139, 92, 246, 0.6);
+    }
+    50% {
+        border-color: rgba(236, 72, 153, 0.8);
+        box-shadow: 0 0 25px rgba(236, 72, 153, 0.6);
+    }
+    75% {
+        border-color: rgba(16, 185, 129, 0.8);
+        box-shadow: 0 0 25px rgba(16, 185, 129, 0.6);
+    }
+}
+
+/* 彩虹霓虹边框动画 */
+@keyframes rainbowNeonBorder {
+    0% {
+        border-color: var(--neon-blue);
+        box-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+    }
+    20% {
+        border-color: var(--neon-purple);
+        box-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
+    }
+    40% {
+        border-color: var(--neon-pink);
+        box-shadow: 0 0 20px rgba(236, 72, 153, 0.5);
+    }
+    60% {
+        border-color: var(--neon-orange);
+        box-shadow: 0 0 20px rgba(245, 158, 11, 0.5);
+    }
+    80% {
+        border-color: var(--neon-green);
+        box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
+    }
+    100% {
+        border-color: var(--neon-blue);
+        box-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+    }
+}
+
+/* 呼吸发光动画 */
+@keyframes breatheGlow {
+    0%, 100% {
+        box-shadow: 0 0 5px rgba(0, 212, 255, 0.3);
+    }
+    50% {
+        box-shadow: 0 0 25px rgba(0, 212, 255, 0.8), 0 0 35px rgba(0, 212, 255, 0.4);
+    }
+}
+
+/* 数据流动画 */
+@keyframes dataFlow {
+    0% {
+        transform: translateX(-100%) scaleX(0);
+    }
+    50% {
+        transform: translateX(0%) scaleX(1);
+    }
+    100% {
+        transform: translateX(100%) scaleX(0);
+    }
+}
+
+@keyframes particleTwinkle {
+    0%, 100% {
+        opacity: 0.3;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.2);
+    }
+}
+
+/* 脉冲动画 */
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+@keyframes heartbeat {
+    0%, 100% {
+        transform: scale(1);
+    }
+    14% {
+        transform: scale(1.1);
+    }
+    28% {
+        transform: scale(1);
+    }
+    42% {
+        transform: scale(1.1);
+    }
+    70% {
+        transform: scale(1);
+    }
+}
+
+/* 旋转动画 */
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes spinReverse {
+    0% {
+        transform: rotate(360deg);
+    }
+    100% {
+        transform: rotate(0deg);
+    }
+}
+
+@keyframes wobble {
+    0% {
+        transform: translateX(0%);
+    }
+    15% {
+        transform: translateX(-25%) rotate(-5deg);
+    }
+    30% {
+        transform: translateX(20%) rotate(3deg);
+    }
+    45% {
+        transform: translateX(-15%) rotate(-3deg);
+    }
+    60% {
+        transform: translateX(10%) rotate(2deg);
+    }
+    75% {
+        transform: translateX(-5%) rotate(-1deg);
+    }
+    100% {
+        transform: translateX(0%);
+    }
+}
+
+/* 弹跳动画 */
+@keyframes bounce {
+    0%, 20%, 53%, 80%, 100% {
+        transform: translate3d(0, 0, 0);
+    }
+    40%, 43% {
+        transform: translate3d(0, -30px, 0);
+    }
+    70% {
+        transform: translate3d(0, -15px, 0);
+    }
+    90% {
+        transform: translate3d(0, -4px, 0);
+    }
+}
+
+@keyframes bounceIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.3);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.05);
+    }
+    70% {
+        transform: scale(0.9);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes bounceOut {
+    20% {
+        transform: scale(0.9);
+    }
+    50%, 55% {
+        opacity: 1;
+        transform: scale(1.1);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(0.3);
+    }
+}
+
+/* 摇摆动画 */
+@keyframes swing {
+    20% {
+        transform: rotate(15deg);
+    }
+    40% {
+        transform: rotate(-10deg);
+    }
+    60% {
+        transform: rotate(5deg);
+    }
+    80% {
+        transform: rotate(-5deg);
+    }
+    100% {
+        transform: rotate(0deg);
+    }
+}
+
+@keyframes shake {
+    0%, 100% {
+        transform: translateX(0);
+    }
+    10%, 30%, 50%, 70%, 90% {
+        transform: translateX(-10px);
+    }
+    20%, 40%, 60%, 80% {
+        transform: translateX(10px);
+    }
+}
+
+/* 打字机效果 */
+@keyframes typewriter {
+    from {
+        width: 0;
+    }
+    to {
+        width: 100%;
+    }
+}
+
+@keyframes blinkCursor {
+    from, to {
+        border-color: transparent;
+    }
+    50% {
+        border-color: var(--neon-blue);
+    }
+}
+
+/* 进度条动画 */
+@keyframes progressShine {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+@keyframes progressPulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+}
+
+/* 加载动画 */
+@keyframes loadingDots {
+    0%, 80%, 100% {
+        transform: scale(0.8);
+        opacity: 0.5;
+    }
+    40% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes loadingSpinner {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes loadingWave {
+    0%, 60%, 100% {
+        transform: initial;
+    }
+    30% {
+        transform: translateY(-15px);
+    }
+}
+
+/* 通知动画 */
+@keyframes notificationSlideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes notificationSlideOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+/* 模态框动画 */
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-50px) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* 工具类动画 */
+.animate-fade-in {
+    animation: fadeIn 0.3s ease-out;
+}
+
+.animate-fade-in-up {
+    animation: fadeInUp 0.4s ease-out;
+}
+
+.animate-fade-in-down {
+    animation: fadeInDown 0.4s ease-out;
+}
+
+.animate-fade-in-left {
+    animation: fadeInLeft 0.4s ease-out;
+}
+
+.animate-fade-in-right {
+    animation: fadeInRight 0.4s ease-out;
+}
+
+.animate-slide-in-up {
+    animation: slideInUp 0.3s ease-out;
+}
+
+.animate-slide-in-down {
+    animation: slideInDown 0.3s ease-out;
+}
+
+.animate-slide-in-left {
+    animation: slideInLeft 0.3s ease-out;
+}
+
+.animate-slide-in-right {
+    animation: slideInRight 0.3s ease-out;
+}
+
+.animate-scale-in {
+    animation: scaleIn 0.3s ease-out;
+}
+
+.animate-bounce-in {
+    animation: bounceIn 0.6s ease-out;
+}
+
+.animate-neon-glow {
+    animation: neonGlow 2s ease-in-out infinite;
+}
+
+.animate-neon-pulse {
+    animation: neonPulse 2s ease-in-out infinite;
+}
+
+.animate-neon-flicker {
+    animation: neonFlicker 3s ease-in-out infinite;
+}
+
+.animate-pulse {
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.animate-heartbeat {
+    animation: heartbeat 1.5s ease-in-out infinite;
+}
+
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
+
+.animate-spin-reverse {
+    animation: spinReverse 1s linear infinite;
+}
+
+.animate-bounce {
+    animation: bounce 2s infinite;
+}
+
+.animate-swing {
+    animation: swing 1s ease-in-out;
+}
+
+.animate-shake {
+    animation: shake 0.5s ease-in-out;
+}
+
+.animate-wobble {
+    animation: wobble 1s ease-in-out;
+}
+
+.animate-light-sweep {
+    animation: lightSweep 2s ease-in-out infinite;
+}
+
+.animate-neon-border {
+    animation: neonBorder 3s ease-in-out infinite;
+}
+
+.animate-rainbow-neon-border {
+    animation: rainbowNeonBorder 4s linear infinite;
+}
+
+.animate-breathe-glow {
+    animation: breatheGlow 3s ease-in-out infinite;
+}
+
+.animate-data-flow {
+    animation: dataFlow 1.5s ease-in-out infinite;
+}
+
+/* 延迟动画 */
+.animate-delay-100 {
+    animation-delay: 0.1s;
+}
+
+.animate-delay-200 {
+    animation-delay: 0.2s;
+}
+
+.animate-delay-300 {
+    animation-delay: 0.3s;
+}
+
+.animate-delay-500 {
+    animation-delay: 0.5s;
+}
+
+.animate-delay-700 {
+    animation-delay: 0.7s;
+}
+
+.animate-delay-1000 {
+    animation-delay: 1s;
+}
+
+/* 动画持续时间 */
+.animate-duration-fast {
+    animation-duration: 0.2s;
+}
+
+.animate-duration-normal {
+    animation-duration: 0.3s;
+}
+
+.animate-duration-slow {
+    animation-duration: 0.5s;
+}
+
+.animate-duration-slower {
+    animation-duration: 1s;
+}
+
+/* 动画缓动函数 */
+.animate-ease-linear {
+    animation-timing-function: linear;
+}
+
+.animate-ease-in {
+    animation-timing-function: ease-in;
+}
+
+.animate-ease-out {
+    animation-timing-function: ease-out;
+}
+
+.animate-ease-in-out {
+    animation-timing-function: ease-in-out;
+}
+
+/* 无限循环动画 */
+.animate-infinite {
+    animation-iteration-count: infinite;
+}
+
+/* 暂停动画 */
+.animate-paused {
+    animation-play-state: paused;
+}
+
+/* 反向动画 */
+.animate-reverse {
+    animation-direction: reverse;
+}
+
+.animate-alternate {
+    animation-direction: alternate;
+}
+
+/* 动画填充模式 */
+.animate-fill-forwards {
+    animation-fill-mode: forwards;
+}
+
+.animate-fill-backwards {
+    animation-fill-mode: backwards;
+}
+
+.animate-fill-both {
+    animation-fill-mode: both;
+}
+
+/* 响应式动画控制 */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* 性能优化 */
+.will-change-transform {
+    will-change: transform;
+}
+
+.will-change-opacity {
+    will-change: opacity;
+}
+
+.will-change-auto {
+    will-change: auto;
+}
+
+/* GPU加速 */
+.gpu-accelerated {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+} 

@@ -4,6 +4,22 @@
     <div class="app-background">
       <div class="gradient-overlay"></div>
       <div class="particles" v-if="settings.animationsEnabled"></div>
+      <div class="stars" v-if="settings.animationsEnabled">
+        <div class="star" v-for="n in 50" :key="n" 
+             :style="{ 
+               left: Math.random() * 100 + '%', 
+               top: Math.random() * 100 + '%',
+               animationDelay: Math.random() * 3 + 's'
+             }"></div>
+      </div>
+      <div class="floating-particles" v-if="settings.animationsEnabled">
+        <div class="particle" v-for="n in 20" :key="n"
+             :style="{
+               left: Math.random() * 100 + '%',
+               animationDelay: Math.random() * 20 + 's',
+               animationDuration: (15 + Math.random() * 10) + 's'
+             }"></div>
+      </div>
     </div>
 
     <!-- 主容器 -->
@@ -11,49 +27,53 @@
       <!-- 头部导航 -->
       <header class="app-header">
         <div class="header-content">
-          <!-- Logo和标题 -->
-          <div class="header-left">
-            <h1 class="app-title">
-              <i class="fas fa-robot"></i>
-              AI社群模拟小游戏
-            </h1>
-            <div class="connection-status" :class="{ 'connected': isConnected, 'disconnected': !isConnected }">
-              <i :class="isConnected ? 'fas fa-wifi' : 'fas fa-wifi-slash'"></i>
-              <span>{{ isConnected ? '已连接' : '未连接' }}</span>
-            </div>
-          </div>
-
-          <!-- 导航按钮 -->
+          <!-- 导航按钮组 -->
           <nav class="header-nav">
-            <button
-              v-for="(item, index) in navItems"
-              :key="item.key"
-              @click="setCurrentView(item.key as any)"
-              :class="['nav-button', { 'active': currentView === item.key }]"
-              :title="`${item.label} (Ctrl+${index + 1})`"
-            >
-              <i :class="item.icon"></i>
-              <span>{{ item.label }}</span>
-              <kbd class="shortcut-hint">{{ index + 1 }}</kbd>
-            </button>
+            <!-- 主要导航按钮 -->
+            <div class="nav-main">
+              <button
+                v-for="(item, index) in navItems"
+                :key="item.key"
+                @click="setCurrentView(item.key as any)"
+                :class="['nav-button', { 'active': currentView === item.key }]"
+                :title="`${item.label} (Ctrl+${index + 1})`"
+              >
+                <i :class="item.icon"></i>
+                <span>{{ item.label }}</span>
+                <kbd class="shortcut-hint">{{ index + 1 }}</kbd>
+              </button>
+            </div>
+
+            <!-- 功能按钮组 -->
+            <div class="nav-actions">
+              <!-- LLM状态指示器 -->
+              <SimpleLLMStatus />
+
+              <!-- 主题切换 -->
+              <button class="icon-button" @click="toggleTheme" title="切换主题">
+                <i :class="isDarkMode ? 'fas fa-sun' : 'fas fa-moon'"></i>
+                <span class="button-label">{{ isDarkMode ? '浅色' : '深色' }}</span>
+              </button>
+
+              <!-- 刷新按钮 -->
+              <button class="icon-button" @click="refreshData" :disabled="isLoading" title="刷新数据">
+                <i :class="['fas fa-sync-alt', { 'spinning': isLoading }]"></i>
+                <span class="button-label">刷新</span>
+              </button>
+
+              <!-- 连接状态 -->
+              <div class="connection-status" :class="{ 'connected': isConnected, 'disconnected': !isConnected }">
+                <i :class="isConnected ? 'fas fa-wifi' : 'fas fa-wifi-slash'"></i>
+                <span>{{ isConnected ? '已连接' : '未连接' }}</span>
+              </div>
+            </div>
           </nav>
 
-          <!-- 头部右侧操作 -->
-          <div class="header-right">
-            <!-- 通知按钮 -->
-            <button class="icon-button" @click="showNotifications = !showNotifications" v-if="unreadNotifications > 0">
+          <!-- 通知按钮（如果有未读通知） -->
+          <div class="header-notifications" v-if="unreadNotifications > 0">
+            <button class="icon-button notification-btn" @click="showNotifications = !showNotifications">
               <i class="fas fa-bell"></i>
               <span class="notification-badge">{{ unreadNotifications }}</span>
-            </button>
-
-            <!-- 主题切换 -->
-            <button class="icon-button" @click="toggleTheme">
-              <i :class="isDarkMode ? 'fas fa-sun' : 'fas fa-moon'"></i>
-            </button>
-
-            <!-- 刷新按钮 -->
-            <button class="icon-button" @click="refreshData" :disabled="isLoading">
-              <i :class="['fas fa-sync-alt', { 'spinning': isLoading }]"></i>
             </button>
           </div>
         </div>
@@ -148,6 +168,11 @@ import CommunityView from './views/CommunityView.vue';
 import ChatView from './views/ChatView.vue';
 import SettingsView from './views/SettingsView.vue';
 
+// 创建一个简单的LLM状态指示器组件
+const SimpleLLMStatus = {
+  template: `<div style="display: flex; align-items: center; gap: 6px; padding: 6px 12px; border: 1px solid rgba(255,255,255,0.2); border-radius: 6px;"><div style="width: 8px; height: 8px; border-radius: 50%; background: #10b981;"></div><span style="font-size: 14px;">LLM</span></div>`
+};
+
 // 状态管理
 const appStore = useAppStore();
 const communityStore = useCommunityStore();
@@ -172,7 +197,6 @@ const {
   lastUpdated
 } = communityStore;
 
-// 方法
 const {
   setCurrentView,
   toggleTheme,
@@ -306,8 +330,13 @@ onUnmounted(() => {
 /* 主应用样式 */
 #app {
   min-height: 100vh;
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   transition: all 0.3s ease;
+  overflow-x: hidden;
 }
 
 /* 背景效果 */
@@ -315,9 +344,10 @@ onUnmounted(() => {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
+  width: 100vw;
+  height: 100vh;
   z-index: -1;
+  overflow: hidden;
 }
 
 .gradient-overlay {
@@ -348,13 +378,75 @@ onUnmounted(() => {
   100% { transform: translateY(-100vh); }
 }
 
+/* 星星效果 */
+.stars {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.star {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  animation: twinkle 3s infinite;
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+/* 浮动粒子效果 */
+.floating-particles {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: radial-gradient(circle, rgba(0, 212, 255, 0.8) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: float-up linear infinite;
+}
+
+@keyframes float-up {
+  0% {
+    transform: translateY(100vh) scale(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-100px) scale(1);
+    opacity: 0;
+  }
+}
+
 /* 应用容器 */
 .app-container {
   min-height: 100vh;
+  width: 100vw;
   display: flex;
   flex-direction: column;
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
+  position: relative;
 }
 
 .dark .app-container {
@@ -367,7 +459,7 @@ onUnmounted(() => {
   background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(20px);
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-  padding: 1rem 2rem;
+  padding: 0.5rem 1rem;
   position: sticky;
   top: 0;
   z-index: 100;
@@ -384,6 +476,7 @@ onUnmounted(() => {
   justify-content: space-between;
   max-width: 1400px;
   margin: 0 auto;
+  gap: 1rem;
 }
 
 .header-left {
@@ -407,184 +500,172 @@ onUnmounted(() => {
 .connection-status {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-md);
   font-size: 0.875rem;
-  padding: 0.25rem 0.75rem;
-  border-radius: 1rem;
+  font-weight: 500;
   border: 1px solid;
+  transition: all 0.3s ease;
 }
 
 .connection-status.connected {
-  color: #10b981;
-  border-color: #10b981;
+  color: var(--neon-green);
+  border-color: rgba(16, 185, 129, 0.3);
   background: rgba(16, 185, 129, 0.1);
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.2);
 }
 
 .connection-status.disconnected {
-  color: #ef4444;
-  border-color: #ef4444;
-  background: rgba(239, 68, 68, 0.1);
+  color: var(--neon-pink);
+  border-color: rgba(236, 72, 153, 0.3);
+  background: rgba(236, 72, 153, 0.1);
+  box-shadow: 0 0 10px rgba(236, 72, 153, 0.2);
 }
 
 /* 导航样式 */
 .header-nav {
   display: flex;
-  gap: 0.5rem;
+  align-items: center;
+  justify-content: space-between;
+  flex: 1;
+  gap: var(--spacing-lg);
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.nav-main {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
+}
+
+.nav-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
 }
 
 .nav-button {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 0.75rem;
-  background: transparent;
-  color: inherit;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   font-weight: 500;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  position: relative;
+  overflow: hidden;
+}
+
+.nav-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.nav-button:hover::before {
+  left: 100%;
 }
 
 .nav-button:hover {
-  background: rgba(102, 126, 234, 0.1);
-  transform: translateY(-1px);
+  border-color: var(--neon-blue);
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+  transform: translateY(-2px);
+  background: rgba(0, 212, 255, 0.05);
 }
 
 .nav-button.active {
-  background: linear-gradient(45deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, var(--neon-blue), var(--electric-blue));
+  border-color: var(--neon-blue);
   color: white;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 0 25px rgba(0, 212, 255, 0.4);
+  transform: translateY(-2px);
 }
 
-/* 头部右侧 */
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+.nav-button.active::before {
+  display: none;
 }
 
 .icon-button {
   position: relative;
-  width: 2.5rem;
-  height: 2.5rem;
-  border: none;
-  border-radius: 50%;
-  background: rgba(102, 126, 234, 0.1);
-  color: inherit;
-  cursor: pointer;
-  transition: all 0.3s ease;
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.875rem;
+  white-space: nowrap;
 }
 
 .icon-button:hover:not(:disabled) {
-  background: rgba(102, 126, 234, 0.2);
-  transform: scale(1.1);
+  border-color: var(--neon-blue);
+  color: var(--text-primary);
+  background: rgba(0, 212, 255, 0.05);
+  box-shadow: 0 0 15px rgba(0, 212, 255, 0.2);
+  transform: translateY(-1px);
 }
 
 .icon-button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+  transform: none;
+}
+
+.button-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.header-notifications {
+  display: flex;
+  align-items: center;
+}
+
+.notification-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  padding: 0;
+  justify-content: center;
 }
 
 .notification-badge {
   position: absolute;
-  top: -0.25rem;
-  right: -0.25rem;
-  background: #ef4444;
+  top: -4px;
+  right: -4px;
+  background: var(--neon-pink);
   color: white;
   font-size: 0.75rem;
-  padding: 0.125rem 0.375rem;
-  border-radius: 0.75rem;
-  min-width: 1.25rem;
+  padding: 2px 6px;
+  border-radius: 10px;
+  min-width: 18px;
   text-align: center;
-}
-
-.spinning {
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-/* 通知面板 */
-.notifications-panel {
-  position: absolute;
-  top: 100%;
-  right: 2rem;
-  width: 24rem;
-  max-height: 20rem;
-  background: white;
-  border-radius: 0.75rem;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-  z-index: 200;
-  overflow: hidden;
-}
-
-.dark .notifications-panel {
-  background: #2d3748;
-}
-
-.notifications-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-}
-
-.dark .notifications-header {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.notifications-list {
-  max-height: 16rem;
-  overflow-y: auto;
-}
-
-.notification-item {
-  display: flex;
-  gap: 1rem;
-  padding: 1rem;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-
-.notification-item:hover {
-  background: rgba(0, 0, 0, 0.05);
-}
-
-.dark .notification-item:hover {
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.notification-content h4 {
-  margin: 0 0 0.25rem 0;
-  font-size: 0.875rem;
   font-weight: 600;
-}
-
-.notification-content p {
-  margin: 0 0 0.25rem 0;
-  font-size: 0.8rem;
-  opacity: 0.8;
-}
-
-.notification-time {
-  font-size: 0.75rem;
-  opacity: 0.6;
+  box-shadow: 0 0 10px rgba(236, 72, 153, 0.4);
 }
 
 /* 主内容区 */
 .app-main {
   flex: 1;
   position: relative;
-  padding: 2rem;
+  padding: 0.25rem;
   max-width: 1400px;
   margin: 0 auto;
   width: 100%;
@@ -651,7 +732,7 @@ onUnmounted(() => {
 .app-footer {
   background: rgba(248, 250, 252, 0.9);
   border-top: 1px solid rgba(0, 0, 0, 0.1);
-  padding: 1rem 2rem;
+  padding: 0.5rem 1rem;
 }
 
 .dark .app-footer {
@@ -717,29 +798,251 @@ onUnmounted(() => {
 }
 
 /* 响应式设计 */
+@media (max-width: 1024px) {
+  .header-nav {
+    max-width: 800px;
+    gap: var(--spacing-md);
+  }
+  
+  .nav-button {
+    padding: var(--spacing-xs) var(--spacing-md);
+    font-size: 0.8rem;
+  }
+  
+  .icon-button {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    font-size: 0.8rem;
+  }
+  
+  .button-label {
+    font-size: 0.7rem;
+  }
+}
+
 @media (max-width: 768px) {
-  .app-main {
-    padding: 1rem;
+  .app-header {
+    padding: var(--spacing-sm) var(--spacing-lg);
   }
   
   .header-content {
-    flex-direction: column;
-    gap: 1rem;
+    gap: var(--spacing-sm);
   }
   
-  .footer-content {
-    flex-direction: column;
-    gap: 0.5rem;
-    text-align: center;
+  .header-nav {
+    gap: var(--spacing-sm);
+    max-width: none;
   }
   
-  .notifications-panel {
-    width: calc(100vw - 2rem);
-    right: 1rem;
+  .nav-main {
+    gap: var(--spacing-xs);
+  }
+  
+  .nav-actions {
+    gap: var(--spacing-xs);
+  }
+  
+  .nav-button {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    font-size: 0.75rem;
+  }
+  
+  .nav-button span {
+    display: none; /* 隐藏按钮文字，只显示图标 */
+  }
+  
+  .icon-button {
+    padding: var(--spacing-xs);
+    min-width: 32px;
+    height: 32px;
+  }
+  
+  .button-label {
+    display: none; /* 隐藏功能按钮文字 */
+  }
+  
+  .connection-status {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    font-size: 0.75rem;
   }
   
   .shortcut-hint {
-    display: none;
+    display: none; /* 隐藏快捷键提示 */
   }
+}
+
+@media (max-width: 480px) {
+  .app-header {
+    padding: var(--spacing-xs) var(--spacing-md);
+  }
+  
+  .header-content {
+    gap: var(--spacing-xs);
+  }
+  
+  .header-nav {
+    gap: var(--spacing-xs);
+  }
+  
+  .nav-main {
+    gap: 2px;
+  }
+  
+  .nav-actions {
+    gap: 2px;
+  }
+  
+  .nav-button {
+    padding: var(--spacing-xs);
+    min-width: 28px;
+    height: 28px;
+    border-radius: var(--radius-sm);
+  }
+  
+  .icon-button {
+    padding: 4px;
+    min-width: 28px;
+    height: 28px;
+    border-radius: var(--radius-sm);
+  }
+  
+  .connection-status span {
+    display: none; /* 小屏幕隐藏连接状态文字 */
+  }
+  
+  .connection-status {
+    padding: var(--spacing-xs);
+    min-width: 28px;
+    height: 28px;
+    justify-content: center;
+  }
+  
+  .header-notifications {
+    margin-left: var(--spacing-xs);
+  }
+  
+  .notification-btn {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+/* 动画效果 */
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* 通知面板样式 */
+.notifications-panel {
+  position: absolute;
+  top: 100%;
+  right: var(--spacing-lg);
+  width: 320px;
+  max-height: 400px;
+  background: var(--bg-card);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-heavy);
+  z-index: 200;
+  overflow: hidden;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.notifications-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-lg);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.notifications-header h3 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.clear-btn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-secondary);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.75rem;
+}
+
+.clear-btn:hover {
+  border-color: var(--neon-blue);
+  color: var(--text-primary);
+  background: rgba(0, 212, 255, 0.05);
+}
+
+.notifications-list {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.notification-item {
+  display: flex;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.notification-item:hover {
+  background: rgba(0, 212, 255, 0.05);
+}
+
+.notification-item:last-child {
+  border-bottom: none;
+}
+
+.notification-item.success i {
+  color: var(--neon-green);
+}
+
+.notification-item.error i {
+  color: var(--neon-pink);
+}
+
+.notification-item.warning i {
+  color: var(--neon-orange);
+}
+
+.notification-item.info i {
+  color: var(--neon-blue);
+}
+
+.notification-content {
+  flex: 1;
+}
+
+.notification-content h4 {
+  margin: 0 0 var(--spacing-xs) 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.notification-content p {
+  margin: 0 0 var(--spacing-xs) 0;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.notification-time {
+  font-size: 0.7rem;
+  color: var(--text-tertiary);
 }
 </style> 

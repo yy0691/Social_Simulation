@@ -13,7 +13,7 @@
               <i class="fas fa-comments"></i>
             </div>
             <div class="chat-details">
-              <h2 class="chat-title">AI社群聊天室</h2>
+              <h3 class="chat-title">AI社群聊天室</h3>
               <p class="chat-subtitle">
                 <StatusIndicator
                   :status="connectionStatus"

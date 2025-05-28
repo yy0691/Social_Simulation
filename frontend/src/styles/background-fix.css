@@ -1,0 +1,85 @@
+/* 背景充满屏幕修复样式 */
+
+/* 确保html和body充满整个屏幕 */
+html, body {
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow-x: hidden !important;
+}
+
+/* 确保应用容器充满整个屏幕 */
+#app {
+  width: 100vw !important;
+  height: 100vh !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow-x: hidden !important;
+}
+
+/* 确保背景容器充满整个屏幕 */
+.app-background {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: -1 !important;
+  overflow: hidden !important;
+}
+
+/* 确保渐变覆盖层充满整个屏幕 */
+.gradient-overlay {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* 确保粒子效果充满整个屏幕 */
+.particles {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* 确保星星效果充满整个屏幕 */
+.stars {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  overflow: hidden !important;
+}
+
+/* 确保浮动粒子效果充满整个屏幕 */
+.floating-particles {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  overflow: hidden !important;
+}
+
+/* 确保应用容器充满整个屏幕 */
+.app-container {
+  width: 100vw !important;
+  min-height: 100vh !important;
+  position: relative !important;
+} 

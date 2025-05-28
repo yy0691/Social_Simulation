@@ -3,14 +3,64 @@ AI社群模拟小游戏 - 后端主入口文件
 使用FastAPI框架构建的RESTful API服务
 """
 
+# 加载环境变量文件
+import os
+from pathlib import Path
+
+# 加载.env文件
+def load_env():
+    """加载.env文件中的环境变量"""
+    env_path = Path(__file__).parent / '.env'
+    if env_path.exists():
+        try:
+            # 尝试UTF-8编码
+            with open(env_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+        except UnicodeDecodeError:
+            try:
+                # 如果UTF-8失败，尝试GBK编码
+                with open(env_path, 'r', encoding='gbk') as f:
+                    content = f.read()
+            except UnicodeDecodeError:
+                # 如果还是失败，尝试latin-1编码
+                with open(env_path, 'r', encoding='latin-1') as f:
+                    content = f.read()
+        
+        # 解析环境变量
+        for line in content.splitlines():
+            line = line.strip()
+            if line and not line.startswith('#') and '=' in line:
+                key, value = line.split('=', 1)
+                key = key.strip()
+                value = value.strip().strip('"').strip("'")  # 去除引号
+                os.environ[key] = value
+                print(f"  {key}={value}")
+        
+        print(f"✅ 已加载环境变量文件: {env_path}")
+    else:
+        print(f"⚠️ 环境变量文件不存在: {env_path}")
+
+# 在导入其他模块之前加载环境变量
+load_env()
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, HTMLResponse
 import uvicorn
+import asyncio
+import logging
 from datetime import datetime
 
 # 导入API路由
-from api.v1 import community, commands, chat
+from api.v1 import community, commands, chat, system
+
+# 导入模拟和LLM模块
+from modules.simulation import community_simulation
+from modules.llm import validate_llm_config, response_generator
+
+# 配置日志
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # 创建FastAPI应用实例
 app = FastAPI(
@@ -29,7 +79,7 @@ app = FastAPI(
 # 配置CORS跨域支持
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],  # 允许前端开发服务器
+    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:3000"],  # 允许前端开发服务器
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -39,6 +89,53 @@ app.add_middleware(
 app.include_router(community.router, prefix="/api/v1")
 app.include_router(commands.router, prefix="/api/v1")
 app.include_router(chat.router, prefix="/api/v1")
+app.include_router(system.router, prefix="/api/v1")
+
+# 启动事件处理
+@app.on_event("startup")
+async def startup_event():
+    """应用启动时执行的初始化任务"""
+    logger.info("🚀 AI社群模拟小游戏API服务启动中...")
+    
+    try:
+        # 验证LLM配置
+        is_valid, config_message = validate_llm_config()
+        if is_valid:
+            logger.info("✅ LLM配置验证成功")
+        else:
+            logger.warning(f"⚠️ LLM配置问题: {config_message}")
+        
+        # 启动社群模拟
+        await community_simulation.start_simulation()
+        logger.info("✅ AI社群模拟引擎已启动")
+        
+        # 检查数据库连接
+        from modules.shared.database import SessionLocal, CommunityStats
+        try:
+            db = SessionLocal()
+            db.query(CommunityStats).first()
+            db.close()
+            logger.info("✅ 数据库连接正常")
+        except Exception as db_error:
+            logger.error(f"❌ 数据库连接失败: {str(db_error)}")
+        
+        logger.info("🎉 所有服务初始化完成")
+        
+    except Exception as e:
+        logger.error(f"❌ 启动过程中发生错误: {str(e)}")
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """应用关闭时执行的清理任务"""
+    logger.info("🛑 AI社群模拟小游戏API服务关闭中...")
+    
+    try:
+        # 停止社群模拟
+        await community_simulation.stop_simulation()
+        logger.info("✅ AI社群模拟引擎已停止")
+        
+    except Exception as e:
+        logger.error(f"❌ 关闭过程中发生错误: {str(e)}")
 
 # 根路径 - 健康检查接口
 @app.get("/")
@@ -51,7 +148,8 @@ async def read_root():
         "message": "AI社群模拟小游戏API服务运行中",
         "status": "healthy",
         "timestamp": datetime.now().isoformat(),
-        "version": "1.0.0"
+        "version": "1.0.0",
+        "simulation_running": community_simulation.simulation_running
     }
 
 # API版本前缀路由
@@ -71,8 +169,18 @@ async def health_check():
         db_status = "connected"
         db.close()
     except Exception as e:
-        print(f"数据库连接检查失败: {str(e)}")
+        logger.error(f"数据库连接检查失败: {str(e)}")
         db_status = "error"
+    
+    # 检查LLM配置
+    is_llm_valid, llm_message = validate_llm_config()
+    llm_status = "configured" if is_llm_valid else "not_configured"
+    
+    # 获取LLM客户端状态
+    llm_client_status = response_generator.get_client_status()
+    
+    # 获取模拟状态
+    simulation_status = community_simulation.get_simulation_status()
     
     return {
         "status": "ok",
@@ -80,9 +188,59 @@ async def health_check():
         "timestamp": datetime.now().isoformat(),
         "components": {
             "database": db_status,
-            "llm": "not_configured"       # 稍后实现
+            "llm": llm_status,
+            "llm_client": llm_client_status,
+            "simulation": simulation_status
+        },
+        "messages": {
+            "llm_config": llm_message
         }
     }
+
+@app.get("/api/v1/system/status")
+async def get_system_status():
+    """获取系统全面状态信息"""
+    try:
+        # 获取社群统计
+        community_stats = await community_simulation.get_community_stats()
+        
+        # 获取模拟状态
+        simulation_status = community_simulation.get_simulation_status()
+        
+        # 获取LLM状态
+        llm_client_status = response_generator.get_client_status()
+        
+        # 获取最近事件
+        recent_events = await community_simulation.get_recent_events(5)
+        
+        # 获取居民数量
+        agents = community_simulation.get_all_agents()
+        active_agents = [agent for agent in agents if agent.is_active]
+        
+        return {
+            "success": True,
+            "data": {
+                "community_stats": community_stats,
+                "simulation_status": simulation_status,
+                "llm_client_status": llm_client_status,
+                "recent_events": recent_events,
+                "agents_info": {
+                    "total_agents": len(agents),
+                    "active_agents": len(active_agents),
+                    "agent_names": [agent.name for agent in active_agents]
+                },
+                "timestamp": datetime.now().isoformat()
+            }
+        }
+        
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={
+                "success": False,
+                "error": f"获取系统状态失败: {str(e)}"
+            }
+        )
 
 # 自定义ReDoc路由 - 使用本地CDN
 @app.get("/redoc", response_class=HTMLResponse)
@@ -162,11 +320,15 @@ async def get_greeting():
     return {
         "message": "欢迎来到AI社群模拟小游戏！",
         "description": "在这里你可以与AI居民互动，观察社群的发展和演化。",
-        "tips": [
-            "输入指令来影响AI社群的行为",
-            "观察社群统计数据的变化",
-            "与AI居民聊天互动"
-        ]
+        "features": [
+            "📝 输入指令来影响AI社群的行为",
+            "📊 观察社群统计数据的变化", 
+            "💬 与AI居民聊天互动",
+            "🎭 体验AI居民的个性化反应",
+            "🎲 观察随机事件对社群的影响"
+        ],
+        "simulation_running": community_simulation.simulation_running,
+        "agent_count": len(community_simulation.get_all_agents())
     }
 
 # 全局异常处理
@@ -175,6 +337,7 @@ async def global_exception_handler(request, exc):
     """
     全局异常处理器
     """
+    logger.error(f"未处理的异常: {str(exc)}")
     return JSONResponse(
         status_code=500,
         content={

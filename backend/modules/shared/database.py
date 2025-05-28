@@ -16,7 +16,7 @@ DATABASE_URL = "sqlite:///./ai_community_game.db"
 engine = create_engine(
     DATABASE_URL, 
     connect_args={"check_same_thread": False},  # SQLite特有配置
-    echo=True  # 开发模式下显示SQL语句
+    echo=False  # 关闭SQL语句显示
 )
 
 # 创建Session工厂
@@ -56,11 +56,12 @@ class CommunityStats(Base):
     id = Column(Integer, primary_key=True, index=True)
     population = Column(Integer, default=0, comment="社群人口数量")
     happiness = Column(Float, default=50.0, comment="幸福指数(0-100)")
-    activity = Column(Float, default=50.0, comment="活跃度(0-100)")
-    resources = Column(Float, default=100.0, comment="资源量")
+    health = Column(Float, default=50.0, comment="健康度(0-100)")
+    education = Column(Float, default=50.0, comment="教育水平(0-100)")
+    economy = Column(Float, default=50.0, comment="经济状况(0-100)")
     last_updated = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment="最后更新时间")
 
-class Agent(Base):
+class Agents(Base):
     """
     AI智能体表
     存储社群中的AI居民信息
@@ -68,17 +69,50 @@ class Agent(Base):
     __tablename__ = "agents"
     
     id = Column(Integer, primary_key=True, index=True)
+    agent_id = Column(String(100), unique=True, index=True, comment="智能体唯一标识")
     name = Column(String(50), unique=True, index=True, comment="智能体名称")
-    personality = Column(Text, comment="性格描述")
-    role = Column(String(50), default="居民", comment="角色")
-    mood = Column(Float, default=50.0, comment="当前心情(0-100)")
-    activity_level = Column(Float, default=50.0, comment="活跃度")
+    personality = Column(String(50), comment="性格类型")
+    occupation = Column(String(50), comment="职业")
+    age = Column(Integer, comment="年龄")
+    interests = Column(Text, comment="兴趣爱好(JSON格式)")
+    happiness = Column(Float, default=50.0, comment="快乐度(0-100)")
+    health = Column(Float, default=50.0, comment="健康度(0-100)")
+    education = Column(Float, default=50.0, comment="教育水平(0-100)")
+    wealth = Column(Float, default=50.0, comment="财富(0-100)")
+    social_connections = Column(Float, default=50.0, comment="社交关系(0-100)")
+    is_active = Column(Boolean, default=True, comment="是否激活")
     created_at = Column(DateTime, default=datetime.utcnow, comment="创建时间")
     last_active = Column(DateTime, default=datetime.utcnow, comment="最后活跃时间")
 
+# 为兼容性添加别名
+Agent = Agents
+
+class GameEvents(Base):
+    """
+    游戏事件记录表
+    存储游戏中发生的各种事件
+    """
+    __tablename__ = "game_events"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    event_id = Column(String(100), unique=True, index=True, comment="事件唯一标识")
+    title = Column(String(200), comment="事件标题")
+    description = Column(Text, comment="事件详细描述")
+    event_type = Column(String(50), index=True, comment="事件类型")
+    impact_happiness = Column(Float, default=0.0, comment="对快乐度的影响")
+    impact_health = Column(Float, default=0.0, comment="对健康度的影响")
+    impact_education = Column(Float, default=0.0, comment="对教育的影响")
+    impact_economy = Column(Float, default=0.0, comment="对经济的影响")
+    timestamp = Column(DateTime, default=datetime.utcnow, comment="事件发生时间")
+    triggered_by = Column(String(50), comment="触发者")
+    duration_hours = Column(Float, default=1.0, comment="持续时间(小时)")
+    
+    def __repr__(self):
+        return f"<GameEvent(id={self.event_id}, title={self.title}, type={self.event_type})>"
+
 class Event(Base):
     """
-    事件记录表
+    事件记录表（保留旧版本兼容性）
     存储社群中发生的各种事件
     """
     __tablename__ = "events"
@@ -116,7 +150,7 @@ class ChatMessage(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     content = Column(Text, comment="消息内容")
-    sender_type = Column(String(20), index=True, comment="发送者类型：user/ai/system")
+    sender_type = Column(String(20), index=True, comment="发送者类型：user/agent/system")
     sender_name = Column(String(100), comment="发送者名称")
     timestamp = Column(DateTime, default=datetime.utcnow, comment="发送时间")
     is_system = Column(Boolean, default=False, comment="是否为系统消息")
@@ -132,8 +166,10 @@ __all__ = [
     "get_db",
     "init_db",
     "CommunityStats",
-    "Agent", 
+    "Agent",
+    "Agents", 
     "Event",
+    "GameEvents",
     "User",
     "ChatMessage"
-] 
+]

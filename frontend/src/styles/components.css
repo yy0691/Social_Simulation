@@ -1,0 +1,634 @@
+/* 通用UI组件样式 */
+
+/* 霓虹按钮组件 */
+.neon-button {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--text-primary);
+    padding: var(--spacing-md) var(--spacing-xl);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    font-size: 14px;
+    position: relative;
+    overflow: hidden;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.neon-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.5s ease;
+}
+
+.neon-button:hover::before {
+    left: 100%;
+}
+
+.neon-button:hover {
+    border-color: var(--neon-blue);
+    box-shadow: 0 0 15px rgba(0, 212, 255, 0.3), 0 4px 20px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.neon-button:active {
+    transform: translateY(0);
+}
+
+.neon-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* 按钮变体 */
+.neon-button.primary {
+    background: linear-gradient(135deg, var(--neon-blue), var(--electric-blue));
+    border-color: var(--neon-blue);
+    color: white;
+}
+
+.neon-button.primary:hover {
+    box-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+    transform: translateY(-3px);
+}
+
+.neon-button.secondary {
+    background: linear-gradient(135deg, var(--neon-purple), var(--neon-pink));
+    border-color: var(--neon-purple);
+    color: white;
+}
+
+.neon-button.secondary:hover {
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
+}
+
+.neon-button.success {
+    background: linear-gradient(135deg, var(--neon-green), var(--neon-blue));
+    border-color: var(--neon-green);
+    color: white;
+}
+
+.neon-button.success:hover {
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
+}
+
+.neon-button.warning {
+    background: linear-gradient(135deg, var(--neon-orange), var(--neon-pink));
+    border-color: var(--neon-orange);
+    color: white;
+}
+
+.neon-button.warning:hover {
+    box-shadow: 0 0 20px rgba(245, 158, 11, 0.5);
+}
+
+.neon-button.danger {
+    background: linear-gradient(135deg, var(--neon-pink), var(--neon-purple));
+    border-color: var(--neon-pink);
+    color: white;
+}
+
+.neon-button.danger:hover {
+    box-shadow: 0 0 20px rgba(236, 72, 153, 0.5);
+}
+
+.neon-button.ghost {
+    background: transparent;
+    border-color: rgba(255, 255, 255, 0.1);
+    color: var(--text-secondary);
+}
+
+.neon-button.ghost:hover {
+    border-color: var(--neon-blue);
+    color: var(--text-primary);
+    background: rgba(0, 212, 255, 0.05);
+}
+
+/* 按钮尺寸 */
+.neon-button.small {
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: 12px;
+    min-height: 32px;
+}
+
+.neon-button.large {
+    padding: var(--spacing-lg) var(--spacing-2xl);
+    font-size: 16px;
+    min-height: 56px;
+}
+
+/* 毛玻璃面板组件 */
+.glass-panel {
+    background: var(--bg-glass);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-heavy);
+    position: relative;
+    overflow: hidden;
+}
+
+.glass-panel::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+}
+
+.glass-panel.transparent {
+    background: rgba(15, 15, 25, 0.6);
+    border-color: rgba(255, 255, 255, 0.05);
+}
+
+.glass-panel.neon {
+    border-color: var(--border-glow);
+    box-shadow: var(--shadow-neon);
+}
+
+.glass-panel.neon::before {
+    background: linear-gradient(90deg, transparent, var(--neon-blue), transparent);
+    opacity: 0.3;
+}
+
+/* 状态指示器组件 */
+.status-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.status-indicator.online {
+    color: var(--neon-green);
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.status-indicator.offline {
+    color: var(--text-tertiary);
+    background: rgba(113, 113, 122, 0.1);
+    border: 1px solid rgba(113, 113, 122, 0.3);
+}
+
+.status-indicator.processing {
+    color: var(--neon-blue);
+    background: rgba(0, 212, 255, 0.1);
+    border: 1px solid rgba(0, 212, 255, 0.3);
+}
+
+.status-indicator.error {
+    color: var(--neon-pink);
+    background: rgba(236, 72, 153, 0.1);
+    border: 1px solid rgba(236, 72, 153, 0.3);
+}
+
+.status-indicator.warning {
+    color: var(--neon-orange);
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.status-indicator.animated .status-dot {
+    animation: pulse 2s infinite;
+}
+
+/* 输入框组件 */
+.neon-input {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    transition: all 0.3s ease;
+    width: 100%;
+    position: relative;
+}
+
+.neon-input:focus {
+    outline: none;
+    border-color: var(--neon-blue);
+    box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.neon-input::placeholder {
+    color: var(--text-tertiary);
+}
+
+.neon-input.error {
+    border-color: var(--neon-pink);
+    box-shadow: 0 0 15px rgba(236, 72, 153, 0.3);
+}
+
+.neon-input.success {
+    border-color: var(--neon-green);
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+}
+
+/* 输入框容器 */
+.input-group {
+    position: relative;
+    width: 100%;
+}
+
+.input-label {
+    display: block;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: var(--spacing-xs);
+}
+
+.input-error {
+    color: var(--neon-pink);
+    font-size: 0.75rem;
+    margin-top: var(--spacing-xs);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+.input-help {
+    color: var(--text-tertiary);
+    font-size: 0.75rem;
+    margin-top: var(--spacing-xs);
+}
+
+/* 加载指示器 */
+.loading-spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-top: 2px solid var(--neon-blue);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading-dots {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+
+.loading-dots span {
+    width: 6px;
+    height: 6px;
+    background: var(--neon-blue);
+    border-radius: 50%;
+    animation: loadingBounce 1.4s infinite ease-in-out;
+}
+
+.loading-dots span:nth-child(1) { animation-delay: -0.32s; }
+.loading-dots span:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes loadingBounce {
+    0%, 80%, 100% {
+        transform: scale(0.8);
+        opacity: 0.5;
+    }
+    40% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* 工具提示 */
+.tooltip {
+    position: relative;
+    display: inline-block;
+}
+
+.tooltip-content {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg-card);
+    color: var(--text-primary);
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 1000;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: var(--shadow-heavy);
+    margin-bottom: var(--spacing-xs);
+}
+
+.tooltip-content::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 4px solid transparent;
+    border-top-color: var(--bg-card);
+}
+
+.tooltip:hover .tooltip-content {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* 徽章组件 */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1;
+}
+
+.badge.primary {
+    background: rgba(0, 212, 255, 0.2);
+    color: var(--neon-blue);
+    border: 1px solid rgba(0, 212, 255, 0.3);
+}
+
+.badge.success {
+    background: rgba(16, 185, 129, 0.2);
+    color: var(--neon-green);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.badge.warning {
+    background: rgba(245, 158, 11, 0.2);
+    color: var(--neon-orange);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.badge.danger {
+    background: rgba(236, 72, 153, 0.2);
+    color: var(--neon-pink);
+    border: 1px solid rgba(236, 72, 153, 0.3);
+}
+
+.badge.secondary {
+    background: rgba(139, 92, 246, 0.2);
+    color: var(--neon-purple);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+/* 分隔线 */
+.divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    margin: var(--spacing-lg) 0;
+}
+
+.divider.vertical {
+    width: 1px;
+    height: auto;
+    background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    margin: 0 var(--spacing-lg);
+}
+
+/* 卡片组件 */
+.card {
+    background: var(--bg-card);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, 
+        rgba(0, 212, 255, 0.05) 0%, 
+        rgba(0, 212, 255, 0.08) 100%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    z-index: 1;
+}
+
+.card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+        transparent, 
+        rgba(255, 255, 255, 0.1), 
+        transparent);
+    transition: left 0.6s ease;
+    z-index: 2;
+}
+
+.card:hover::before {
+    opacity: 1;
+}
+
+.card:hover::after {
+    left: 100%;
+}
+
+.card:hover {
+    border: 3px solid var(--neon-blue);
+    box-shadow: 
+        0 0 25px rgba(0, 212, 255, 0.8),
+        0 0 50px rgba(0, 212, 255, 0.6),
+        0 0 100px rgba(0, 212, 255, 0.3),
+        inset 0 0 20px rgba(0, 212, 255, 0.15),
+        0 0 0 1px rgba(0, 212, 255, 0.5);
+    transform: translateY(-5px) scale(1.02);
+}
+
+.card > * {
+    position: relative;
+    z-index: 3;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-lg);
+    padding-bottom: var(--spacing-md);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.card-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.card-content {
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+.card-footer {
+    margin-top: var(--spacing-lg);
+    padding-top: var(--spacing-md);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* 进度条 */
+.progress {
+    width: 100%;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+}
+
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--neon-blue), var(--electric-blue));
+    border-radius: 4px;
+    transition: width 0.3s ease;
+    position: relative;
+}
+
+.progress-bar::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    animation: progressShine 2s infinite;
+}
+
+@keyframes progressShine {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+/* 切换开关 */
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+    border-radius: 12px;
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 3px;
+    bottom: 3px;
+    background: white;
+    transition: all 0.3s ease;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-switch input:checked + .toggle-slider {
+    background: linear-gradient(135deg, var(--neon-blue), var(--electric-blue));
+    border-color: var(--neon-blue);
+    box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+}
+
+.toggle-switch input:checked + .toggle-slider:before {
+    transform: translateX(20px);
+}
+
+/* 响应式工具类 */
+@media (max-width: 768px) {
+    .neon-button {
+        padding: var(--spacing-sm) var(--spacing-md);
+        font-size: 12px;
+    }
+    
+    .neon-button.large {
+        padding: var(--spacing-md) var(--spacing-lg);
+        font-size: 14px;
+        min-height: 48px;
+    }
+    
+    .card {
+        padding: var(--spacing-md);
+    }
+}
+
+@media (max-width: 480px) {
+    .neon-button {
+        padding: var(--spacing-xs) var(--spacing-sm);
+        font-size: 11px;
+    }
+    
+    .card {
+        padding: var(--spacing-sm);
+    }
+    
+    .card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--spacing-sm);
+    }
+} 
