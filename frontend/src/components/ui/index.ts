@@ -10,6 +10,7 @@ export { default as ChatInput } from './ChatInput.vue';
 export { default as ChatMessageList } from './ChatMessageList.vue';
 export { default as ToggleSwitch } from './ToggleSwitch.vue';
 export { default as CustomSlider } from './CustomSlider.vue';
+export { default as StreamingMessage } from './StreamingMessage.vue';
 
 // 类型定义导出
 export type { NavigationTab } from './Navigation.vue'; 

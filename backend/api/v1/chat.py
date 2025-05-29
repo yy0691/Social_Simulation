@@ -17,6 +17,9 @@ from modules.ai import enhanced_local_chat, smart_chat_handler
 
 router = APIRouter(prefix="/chat", tags=["chat"])
 
+# 添加全局状态跟踪
+active_generations = {}  # 跟踪正在生成回复的AI居民
+
 @router.get("/messages")
 async def get_chat_messages(
     limit: int = 20,
@@ -73,7 +76,7 @@ async def send_message(
     db: Session = Depends(get_db)
 ):
     """
-    发送聊天消息并触发AI居民回复
+    发送聊天消息并触发AI居民回复 - 优化：立即响应，异步处理
     """
     try:
         message = request.get("message", "").strip()
@@ -92,11 +95,83 @@ async def send_message(
         db.add(user_message)
         db.commit()
         
-        # 初始化AI成员档案（如果还没有初始化）
+        # 快速生成AI助手回复（简化版，不依赖社群数据）
+        ai_response = generate_quick_ai_response(message)
+        if ai_response:
+            ai_message = ChatMessage(
+                content=ai_response,
+                sender_type="ai",
+                sender_name="AI助手",
+                timestamp=datetime.now()
+            )
+            db.add(ai_message)
+            db.commit()
+            print(f"🤖 AI助手快速回复: {ai_response}")
+        
+        # 立即启动异步AI居民处理（不等待）
+        asyncio.create_task(process_ai_residents_async(message, db))
+        
+        # 立即返回响应，不等待AI居民处理完成
+        return {
+            "success": True,
+            "message": "消息发送成功",
+            "data": {
+                "user_message": message,
+                "ai_response": ai_response,
+                "agents_processing": "异步处理中...",
+                "timestamp": datetime.now().isoformat()
+            }
+        }
+        
+    except Exception as e:
+        print(f"❌ 发送消息失败: {str(e)}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"发送消息失败: {str(e)}")
+
+def generate_quick_ai_response(message: str) -> str:
+    """生成快速AI助手回复，不依赖复杂的社群数据查询"""
+    message_lower = message.lower()
+    
+    # 基于关键词的快速回复
+    if any(word in message_lower for word in ["你好", "大家好", "hello", "hi"]):
+        responses = [
+            "大家好！欢迎来到AI社群聊天室！居民们马上就会来和你聊天的！",
+            "嗨！很高兴见到你！让我们等等看居民们会怎么回应吧！",
+            "你好！欢迎来到这个温馨的社群！"
+        ]
+        return random.choice(responses)
+    
+    elif any(word in message_lower for word in ["怎么样", "如何", "建议"]):
+        responses = [
+            "这是个很好的问题！居民们可能会有不同的见解。",
+            "让我们听听大家的想法和经验分享吧！",
+            "相信居民们会给出很好的建议！"
+        ]
+        return random.choice(responses)
+    
+    elif any(word in message_lower for word in ["分享", "聊聊", "讨论"]):
+        responses = [
+            "很棒的话题！大家一定很乐意分享自己的想法。",
+            "这种交流很有意义！期待听到大家的分享。",
+            "好主意！让我们一起来讨论这个话题吧！"
+        ]
+        return random.choice(responses)
+    
+    else:
+        responses = [
+            "有意思的话题！让我们看看居民们会怎么回应。",
+            "这个问题很不错！居民们应该会有很多想法。",
+            "期待听到大家的不同观点！"
+        ]
+        return random.choice(responses)
+
+async def process_ai_residents_async(message: str, db: Session):
+    """异步处理AI居民回复 - 重新设计：并行生成+实时流式传输"""
+    try:
+        # 初始化AI成员档案（如果需要）
         if not smart_chat_handler.agent_profiles:
             agents = db.query(Agents).all()
             if agents:
-                # 转换为Agent对象
                 from modules.simulation import Agent
                 agent_objects = []
                 for agent_data in agents:
@@ -107,184 +182,148 @@ async def send_message(
                         occupation=agent_data.occupation,
                         interests=agent_data.interests.split(',') if agent_data.interests else []
                     )
-                    # 设置从数据库获取的状态
                     agent.stats.happiness = int(agent_data.happiness)
                     agent.stats.health = int(agent_data.health) 
                     agent.stats.education = int(agent_data.education)
                     agent.stats.wealth = int(agent_data.wealth)
                     agent.stats.social_connections = int(agent_data.social_connections)
-                    agent.id = agent_data.agent_id  # 使用数据库中的ID
+                    agent.id = agent_data.agent_id
                     agent_objects.append(agent)
                 
                 smart_chat_handler.initialize_agent_profiles(agent_objects)
                 print(f"✅ 智能聊天系统初始化了 {len(agent_objects)} 个AI成员档案")
         
-        # 使用智能聊天处理器生成AI成员回复
-        agent_responses = await smart_chat_handler.process_user_message(message, db)
+        # 获取参与对话的居民（不生成LLM，只是准备参数）
+        participating_agents = await smart_chat_handler.get_participating_agents_info(message, db)
+        print(f"🎭 选择了 {len(participating_agents)} 个AI居民参与对话")
         
-        print(f"🤖 生成了 {len(agent_responses)} 个AI成员回复")
-        
-        # 异步处理AI成员回复
-        asyncio.create_task(process_agent_responses(agent_responses, db))
-        
-        # 生成AI助手回复
-        ai_response = await generate_ai_assistant_response(message, db)
-        if ai_response:
-            # 保存AI助手回复
-            ai_message = ChatMessage(
-                content=ai_response,
-                sender_type="ai",
-                sender_name="AI助手",
-                timestamp=datetime.now()
+        # 立即为每个居民启动独立的生成和流式传输任务
+        tasks = []
+        for agent_info in participating_agents:
+            # 为每个居民创建完全独立的异步任务
+            task = asyncio.create_task(
+                process_single_agent_realtime(agent_info, message, db)
             )
-            db.add(ai_message)
-            db.commit()
-            print(f"🤖 AI助手回复: {ai_response}")
-        
-        return {
-            "success": True,
-            "message": "消息发送成功",
-            "data": {
-                "user_message": message,
-                "ai_response": ai_response,
-                "agent_responses_scheduled": len(agent_responses),
-                "timestamp": datetime.now().isoformat()
-            }
-        }
+            tasks.append(task)
+            
+        # 不等待任务完成，让它们完全并行运行
+        # 每个居民将独立生成LLM并实时流式传输
+        asyncio.gather(*tasks, return_exceptions=True)
         
     except Exception as e:
-        print(f"❌ 发送消息失败: {str(e)}")
-        db.rollback()
-        raise HTTPException(status_code=500, detail=f"发送消息失败: {str(e)}")
+        print(f"❌ 异步处理AI居民回复失败: {str(e)}")
 
-async def process_agent_responses(agent_responses: List[dict], db: Session):
-    """异步处理AI成员回复"""
+async def process_single_agent_realtime(agent_info: dict, user_message: str, db: Session):
+    """单个AI居民的实时生成和流式传输"""
+    agent_name = agent_info["agent_name"]
+    
     try:
-        for response_data in agent_responses:
-            # 等待指定的延迟时间
-            delay = response_data.get("delay", 5.0)
-            await asyncio.sleep(delay)
+        # 立即标记该居民开始生成
+        active_generations[agent_name] = {
+            "status": "generating",
+            "start_time": datetime.now().isoformat(),
+            "content": "",
+            "progress": 0.0,
+            "is_streaming": False
+        }
+        print(f"🎭 {agent_name} 开始实时生成回复...")
+        
+        # 短暂的个性化延迟
+        delay = agent_info.get("delay", 0.5)
+        await asyncio.sleep(min(delay, 2.0))
+        
+        # 立即切换到流式传输状态
+        active_generations[agent_name]["status"] = "streaming"
+        active_generations[agent_name]["is_streaming"] = True
+        print(f"📡 {agent_name} 开始实时LLM生成和流式传输")
+        
+        # 实时调用LLM生成，边生成边流式传输
+        await generate_and_stream_llm_response(agent_name, agent_info, user_message, db)
+        
+    except Exception as e:
+        print(f"❌ {agent_name} 实时处理失败: {str(e)}")
+        if agent_name in active_generations:
+            active_generations[agent_name]["status"] = "error"
+            active_generations[agent_name]["error"] = str(e)
+
+async def generate_and_stream_llm_response(agent_name: str, agent_info: dict, user_message: str, db: Session):
+    """实时生成LLM回复并流式传输"""
+    try:
+        # 使用smart_chat_handler实时生成LLM回复
+        llm_response = await smart_chat_handler.generate_single_agent_response(
+            agent_info, user_message, db
+        )
+        
+        if not llm_response:
+            print(f"❌ {agent_name} LLM生成失败")
+            active_generations[agent_name]["status"] = "error"
+            return
             
-            # 保存AI成员回复到数据库
-            agent_message = ChatMessage(
-                content=response_data["response"],
-                sender_type="agent",
-                sender_name=response_data["agent_name"],
-                timestamp=datetime.now()
-            )
-            
-            # 创建新的数据库会话
-            from modules.shared.database import SessionLocal
-            local_db = SessionLocal()
-            try:
-                local_db.add(agent_message)
-                local_db.commit()
-                print(f"👤 {response_data['agent_name']} 回复: {response_data['response']}")
-            except Exception as e:
-                print(f"❌ 保存 {response_data['agent_name']} 回复失败: {str(e)}")
-                local_db.rollback()
-            finally:
-                local_db.close()
+        print(f"✅ {agent_name} LLM生成成功，开始逐字符流式传输")
+        
+        # 立即开始逐字符流式传输
+        full_response = llm_response["response"]
+        
+        # 模拟真实的逐字符生成过程
+        for i, char in enumerate(full_response):
+            if agent_name not in active_generations:
+                break
                 
+            # 实时更新当前内容
+            active_generations[agent_name]["content"] += char
+            active_generations[agent_name]["current_pos"] = i + 1
+            active_generations[agent_name]["progress"] = (i + 1) / len(full_response)
+            
+            # 模拟打字速度
+            char_delay = 0.02 + (0.01 * (1 if char in '，。！？' else 0.5))
+            await asyncio.sleep(char_delay)
+            
+        # 流式传输完成，保存到数据库
+        agent_message = ChatMessage(
+            content=full_response,
+            sender_type="agent",
+            sender_name=agent_name,
+            timestamp=datetime.now()
+        )
+        
+        # 创建新的数据库会话
+        from modules.shared.database import SessionLocal
+        local_db = SessionLocal()
+        try:
+            local_db.add(agent_message)
+            local_db.commit()
+            print(f"💾 {agent_name} 回复已保存到数据库")
+            
+            # 标记完成
+            active_generations[agent_name] = {
+                "status": "completed",
+                "start_time": active_generations[agent_name]["start_time"],
+                "content": full_response,
+                "progress": 1.0,
+                "completed_time": datetime.now().isoformat()
+            }
+            
+            # 3秒后清理状态
+            asyncio.create_task(cleanup_generation_status(agent_name, 3.0))
+            
+        except Exception as e:
+            print(f"❌ 保存 {agent_name} 回复失败: {str(e)}")
+            local_db.rollback()
+            active_generations[agent_name]["status"] = "error"
+        finally:
+            local_db.close()
+            
     except Exception as e:
-        print(f"❌ 处理AI成员回复失败: {str(e)}")
+        print(f"❌ {agent_name} LLM生成和流式传输失败: {str(e)}")
+        if agent_name in active_generations:
+            active_generations[agent_name]["status"] = "error"
 
-async def generate_ai_assistant_response(user_message: str, db: Session) -> Optional[str]:
-    """生成AI助手回复"""
-    try:
-        # 获取社群统计数据
-        agents = db.query(Agents).all()
-        if not agents:
-            return "欢迎来到AI社群！目前还没有居民数据。"
-        
-        # 计算统计数据
-        total_agents = len(agents)
-        avg_happiness = sum(agent.happiness for agent in agents) / total_agents
-        avg_health = sum(agent.health for agent in agents) / total_agents
-        avg_education = sum(agent.education for agent in agents) / total_agents
-        avg_wealth = sum(agent.wealth for agent in agents) / total_agents
-        
-        community_stats = {
-            "population": total_agents,
-            "happiness": avg_happiness,
-            "health": avg_health,
-            "education": avg_education,
-            "economy": avg_wealth
-        }
-        
-        # 分析用户消息类型
-        message_lower = user_message.lower()
-        
-        # 根据消息内容生成不同类型的回复
-        if any(word in message_lower for word in ["你好", "大家好", "hello", "hi"]):
-            responses = [
-                f"大家好！欢迎来到我们的AI社群！目前有{total_agents}位居民，大家的整体幸福度是{avg_happiness:.1f}%，让我们一起创造更美好的社群生活吧！",
-                f"嗨！很高兴见到你！我们社群现在有{total_agents}位活跃的居民，大家都很友善，快来和他们聊聊吧！",
-                f"你好！欢迎加入我们温馨的社群！这里有{total_agents}位有趣的居民，他们会很乐意和你交流的！"
-            ]
-            return random.choice(responses)
-            
-        elif any(word in message_lower for word in ["天气", "今天"]):
-            responses = [
-                f"今天确实是个好天气！看到大家心情都不错，社群的幸福度达到了{avg_happiness:.1f}%呢！适合多出去走走，和邻居们聊聊天。",
-                f"是啊！好天气总是让人心情愉悦。我注意到我们社群的居民们今天都很活跃，这样的日子最适合组织一些户外活动了！",
-                f"天气好的时候，社群里的氛围也特别好！大家可以趁着好天气多交流，增进邻里感情。"
-            ]
-            return random.choice(responses)
-            
-        elif any(word in message_lower for word in ["活动", "组织", "聚会"]):
-            responses = [
-                f"组织活动是个很棒的想法！我们社群有{total_agents}位居民，大家都有不同的兴趣爱好，一定能策划出很有意思的活动。",
-                f"太好了！社群活动能大大提升大家的幸福度。目前我们的社群活跃度还不错，相信大家都会积极参与的！",
-                f"我支持你的想法！多样化的活动能让社群更有活力，也能让居民们更好地发挥各自的特长。"
-            ]
-            return random.choice(responses)
-            
-        elif any(word in message_lower for word in ["健康", "身体", "运动"]):
-            responses = [
-                f"健康话题很重要！我们社群的整体健康度是{avg_health:.1f}%，还有提升空间。建议大家多参与运动类活动。",
-                f"关注健康是很好的习惯！社群里有医生和其他专业人士，大家可以多交流健康心得。",
-                f"身体健康是幸福生活的基础。我们可以组织一些健康主题的活动，让大家一起关注身心健康。"
-            ]
-            return random.choice(responses)
-            
-        elif any(word in message_lower for word in ["学习", "教育", "知识"]):
-            responses = [
-                f"学习交流很有意义！我们社群的教育水平是{avg_education:.1f}%，大家都很重视知识的积累和分享。",
-                f"终身学习的理念很棒！社群里有教师和各行各业的专家，是很好的学习资源。",
-                f"知识分享能让整个社群受益。建议可以组织读书会或技能分享活动，大家互相学习。"
-            ]
-            return random.choice(responses)
-            
-        elif any(word in message_lower for word in ["工作", "事业", "职业"]):
-            responses = [
-                f"工作话题大家都很关心！社群里有各种职业的居民，可以互相交流工作经验和心得。",
-                f"职业发展确实重要。我们社群的经济状况是{avg_wealth:.1f}%，大家可以分享一些职场智慧。",
-                f"工作和生活的平衡很重要。社群里的朋友们可以互相支持，分享职业发展的经验。"
-            ]
-            return random.choice(responses)
-            
-        elif any(word in message_lower for word in ["社群", "社区", "建设"]):
-            responses = [
-                f"社群建设需要大家共同努力！目前我们有{total_agents}位居民，整体发展还不错，但还有很多可以改进的地方。",
-                f"我们的社群就像一个大家庭！每个人的参与都很重要，让我们一起创造更美好的社区环境。",
-                f"社区发展离不开每个居民的贡献。大家的想法和建议都很宝贵，欢迎多多交流！"
-            ]
-            return random.choice(responses)
-            
-        else:
-            # 通用回复
-            responses = [
-                f"这个话题很有意思！我们社群有{total_agents}位居民，大家都很乐意分享自己的想法和经验。",
-                f"感谢你的分享！社群里的讨论总是很精彩，每个人都能从中学到新东西。",
-                f"很好的话题！我相信居民们会有很多不同的观点，让我们一起听听大家的想法吧！",
-                f"有趣的想法！我们社群鼓励开放的讨论，每个人的声音都很重要。"
-            ]
-            return random.choice(responses)
-            
-    except Exception as e:
-        print(f"❌ 生成AI助手回复失败: {str(e)}")
-        return "很高兴和大家聊天！有什么想法都可以分享哦！"
+async def cleanup_generation_status(agent_name: str, delay: float):
+    """清理生成状态"""
+    await asyncio.sleep(delay)
+    if agent_name in active_generations:
+        del active_generations[agent_name]
+        print(f"🧹 清理了 {agent_name} 的生成状态")
 
 @router.get("/status")
 async def get_chat_status(db: Session = Depends(get_db)):
@@ -325,3 +364,99 @@ async def get_chat_status(db: Session = Depends(get_db)):
             "message": f"获取聊天状态失败: {str(e)}",
             "data": {}
         }
+
+@router.get("/agent-status")
+async def get_agent_status():
+    """获取AI居民回复状态"""
+    return {
+        "success": True,
+        "data": {
+            "active_generations": active_generations,
+            "timestamp": datetime.now().isoformat()
+        }
+    }
+
+@router.get("/stream/{agent_name}")
+async def stream_agent_response(agent_name: str, db: Session = Depends(get_db)):
+    """真正的实时流式传输AI居民回复"""
+    from fastapi.responses import StreamingResponse
+    import json
+    import asyncio
+    
+    print(f"🎬 收到 {agent_name} 的流式传输请求")
+    
+    async def generate_stream():
+        last_pos = 0
+        wait_count = 0
+        max_wait = 150  # 增加等待时间到15秒
+        sent_waiting = False
+        
+        try:
+            while wait_count < max_wait:
+                # 检查该居民是否有正在生成的回复
+                if agent_name in active_generations:
+                    generation_info = active_generations[agent_name]
+                    current_content = generation_info.get("content", "")
+                    status = generation_info.get("status", "")
+                    
+                    print(f"📊 {agent_name} 状态: {status}, 内容长度: {len(current_content)}")
+                    
+                    # 如果有新内容需要传输
+                    if len(current_content) > last_pos:
+                        new_chars = current_content[last_pos:]
+                        
+                        # 逐字符发送新内容
+                        for i, char in enumerate(new_chars):
+                            chunk_data = {
+                                "type": "content",
+                                "char": char,
+                                "progress": generation_info.get("progress", 0),
+                                "agent_name": agent_name,
+                                "total_length": len(current_content)
+                            }
+                            yield f"data: {json.dumps(chunk_data, ensure_ascii=False)}\n\n"
+                            await asyncio.sleep(0.01)  # 很短的延迟，保证顺序
+                        
+                        last_pos = len(current_content)
+                    
+                    # 检查是否完成
+                    if status == "completed":
+                        print(f"✅ {agent_name} 流式传输完成")
+                        yield f"data: {json.dumps({'type': 'complete', 'agent_name': agent_name}, ensure_ascii=False)}\n\n"
+                        break
+                    elif status == "error":
+                        print(f"❌ {agent_name} 生成出错")
+                        yield f"data: {json.dumps({'type': 'error', 'agent_name': agent_name}, ensure_ascii=False)}\n\n"
+                        break
+                        
+                else:
+                    # 如果还没有开始生成，发送等待信号（只发送一次）
+                    if not sent_waiting:
+                        print(f"⏳ {agent_name} 等待开始生成...")
+                        yield f"data: {json.dumps({'type': 'waiting', 'agent_name': agent_name}, ensure_ascii=False)}\n\n"
+                        sent_waiting = True
+                
+                wait_count += 1
+                await asyncio.sleep(0.1)  # 100ms检查一次新内容
+            
+            # 超时处理
+            if wait_count >= max_wait:
+                print(f"⏰ {agent_name} 流式传输超时")
+                yield f"data: {json.dumps({'type': 'timeout', 'agent_name': agent_name}, ensure_ascii=False)}\n\n"
+                
+        except Exception as e:
+            print(f"❌ {agent_name} 流式传输异常: {str(e)}")
+            yield f"data: {json.dumps({'type': 'error', 'agent_name': agent_name, 'error': str(e)}, ensure_ascii=False)}\n\n"
+    
+    return StreamingResponse(
+        generate_stream(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Headers": "*",
+            "Access-Control-Allow-Methods": "*",
+            "X-Accel-Buffering": "no"  # 禁用nginx缓冲，提高实时性
+        }
+    )

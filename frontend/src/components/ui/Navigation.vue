@@ -130,22 +130,22 @@ const handleTabClick = (tab: NavigationTab) => {
   background: rgba(0, 0, 0, 0.3);
   backdrop-filter: blur(20px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  z-index: 100;
+  z-index: 100; 
 }
 
 .nav-container {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  max-width: 1200px;
+  max-width: 100%;
   margin: 0 auto;
-  padding: 0 20px;
-  height: 60px;
+  padding: 0 10px;
+  height: 40px;
 }
 
 .nav-tabs {
   display: flex;
-  gap: 4px;
+  gap: 10px;
 }
 
 .nav-tab {
@@ -165,7 +165,7 @@ const handleTabClick = (tab: NavigationTab) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 10px;
   padding: 12px 20px;
   position: relative;
   z-index: 2;

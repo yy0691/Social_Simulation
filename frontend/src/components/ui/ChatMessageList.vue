@@ -62,7 +62,29 @@
             <span></span>
             <span></span>
           </div>
-          <span class="typing-text">AI正在输入...</span>
+          <div class="typing-text-container">
+            <span class="typing-text">AI居民正在回复中...</span>
+            <div v-if="typingDetails" class="typing-details">
+              <div class="typing-progress">
+                <div class="progress-bar">
+                  <div 
+                    class="progress-fill" 
+                    :style="{ width: `${typingProgress}%` }"
+                  ></div>
+                </div>
+                <span class="progress-text">{{ typingStatusText }}</span>
+              </div>
+              <div v-if="typingAgents.length > 0" class="typing-agents">
+                <span 
+                  v-for="agent in typingAgents" 
+                  :key="agent"
+                  class="agent-name"
+                >
+                  {{ agent }}
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -107,6 +129,11 @@ interface Props {
   showTypingIndicator?: boolean
   autoScroll?: boolean
   maxHeight?: string
+  typingDetails?: {
+    agents: string[]
+    expectedReplies: number
+    receivedReplies: number
+  } | null
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -114,7 +141,8 @@ const props = withDefaults(defineProps<Props>(), {
   loadingHistory: false,
   showTypingIndicator: false,
   autoScroll: true,
-  maxHeight: '400px'
+  maxHeight: '400px',
+  typingDetails: null
 })
 
 const emit = defineEmits<{
@@ -145,6 +173,21 @@ const groupedMessages = computed(() => {
   })
   
   return groups
+})
+
+// 新增：typing状态相关计算属性
+const typingAgents = computed(() => props.typingDetails?.agents || [])
+
+const typingProgress = computed(() => {
+  if (!props.typingDetails) return 0
+  const { expectedReplies, receivedReplies } = props.typingDetails
+  return expectedReplies > 0 ? (receivedReplies / expectedReplies) * 100 : 0
+})
+
+const typingStatusText = computed(() => {
+  if (!props.typingDetails) return ''
+  const { expectedReplies, receivedReplies } = props.typingDetails
+  return `${receivedReplies}/${expectedReplies} 条回复`
 })
 
 // 监听消息变化，自动滚动到底部
@@ -419,10 +462,58 @@ defineExpose({
   animation-delay: 0.4s;
 }
 
+.typing-text-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
 .typing-text {
   font-size: 0.8rem;
   color: var(--color-text-secondary, #6b7280);
   margin-left: 0.5rem;
+}
+
+.typing-details {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.typing-progress {
+  width: 100%;
+  height: 0.5rem;
+  background-color: #f0f0f0;
+  border-radius: 0.25rem;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background-color: #f093fb;
+  border-radius: 0.25rem;
+}
+
+.progress-fill {
+  height: 100%;
+  background-color: #f093fb;
+}
+
+.progress-text {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--color-text-secondary, #6b7280);
+}
+
+.typing-agents {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.agent-name {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--color-text-secondary, #6b7280);
 }
 
 /* 滚动到底部按钮 */

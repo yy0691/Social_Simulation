@@ -13,7 +13,7 @@ const router = createRouter({
       name: 'community',
       component: CommunityView,
       meta: {
-        title: 'AI社群模拟小游戏 - 社群中心'
+        title: '社群中心'
       }
     },
     {
@@ -26,7 +26,7 @@ const router = createRouter({
       name: 'chat', 
       component: ChatView,
       meta: {
-        title: 'AI社群模拟小游戏 - 聊天室'
+        title: '聊天室'
       }
     },
     {
@@ -34,7 +34,7 @@ const router = createRouter({
       name: 'invitation',
       component: InvitationView,
       meta: {
-        title: 'AI社群模拟小游戏 - 邀请管理'
+        title: '邀请管理'
       }
     },
     {
@@ -42,7 +42,7 @@ const router = createRouter({
       name: 'settings',
       component: SettingsView,
       meta: {
-        title: 'AI社群模拟小游戏 - 设置'
+        title: '设置'
       }
     },
     {
@@ -50,7 +50,7 @@ const router = createRouter({
       name: 'showcase',
       component: StyleShowcase,
       meta: {
-        title: 'AI社群模拟小游戏 - 样式展示'
+        title: '样式展示'
       }
     }
   ]

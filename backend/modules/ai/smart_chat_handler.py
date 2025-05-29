@@ -252,18 +252,26 @@ class SmartChatHandler:
             return random.randint(1, 3)
     
     def _calculate_response_delay(self, profile: Dict[str, Any], order: int, participation_score: float) -> float:
-        """计算回复延迟"""
-        base_delay = random.uniform(3.0, 8.0)
-        order_delay = order * random.uniform(2.0, 4.0)
-        participation_modifier = 2.0 - participation_score
+        """计算回复延迟 - 极致优化，接近实时回复"""
+        # 极大缩短基础延迟
+        base_delay = random.uniform(0.2, 1.0)  # 从1-3秒进一步缩短到0.2-1秒
         
+        # 几乎消除顺序延迟，让对话更自然
+        order_delay = order * random.uniform(0.1, 0.5)  # 从0.5-1.5秒缩短到0.1-0.5秒
+        
+        # 最小化参与度影响
+        participation_modifier = 1.2 - (participation_score * 0.2)  # 进一步减少影响
+        
+        # 性格微调，但保持快速响应
         if "外向" in str(profile["personality"]) or "乐观" in str(profile["personality"]):
-            base_delay *= 0.8
+            base_delay *= 0.5  # 外向的人几乎立即回复
         elif "内向" in str(profile["personality"]):
-            base_delay *= 1.3
+            base_delay *= 1.1  # 内向的人也只是稍微慢一点点
         
         total_delay = (base_delay + order_delay) * participation_modifier
-        return max(1.0, min(30.0, total_delay))
+        
+        # 限制在极短的范围内，最多3秒
+        return max(0.1, min(3.0, total_delay))
     
     async def _generate_llm_response(self, profile: Dict[str, Any], user_message: str, 
                                    topic_category: str, conversation_context: List[str]) -> str:
@@ -551,6 +559,72 @@ class SmartChatHandler:
         
         if profile["conversation_count_today"] > 2:
             profile["energy_level"] *= 0.95
+    
+    async def get_participating_agents_info(self, user_message: str, db: Session) -> List[Dict[str, Any]]:
+        """获取参与对话的居民信息（不生成LLM回复）"""
+        # 分析消息主题
+        topic_category = self._analyze_message_topic(user_message)
+        
+        # 获取对话上下文
+        conversation_context = self._get_recent_conversation_context(db)
+        
+        # 选择参与的成员
+        participating_agents = self._select_participating_agents(user_message, topic_category)
+        
+        agent_infos = []
+        
+        for i, (agent_id, participation_score) in enumerate(participating_agents):
+            profile = self.agent_profiles[agent_id]
+            
+            # 计算回复延迟
+            delay = self._calculate_response_delay(profile, i, participation_score)
+            
+            agent_infos.append({
+                "agent_id": agent_id,
+                "agent_name": profile["name"],
+                "profile": profile,
+                "delay": delay,
+                "participation_score": participation_score,
+                "user_message": user_message,
+                "topic_category": topic_category,
+                "conversation_context": conversation_context
+            })
+        
+        return agent_infos
+    
+    async def generate_single_agent_response(self, agent_info: Dict[str, Any], user_message: str, db: Session) -> Dict[str, Any]:
+        """为单个居民生成LLM回复"""
+        try:
+            profile = agent_info["profile"]
+            topic_category = agent_info["topic_category"]
+            conversation_context = agent_info["conversation_context"]
+            
+            # 使用LLM生成智能回复
+            response = await self._generate_llm_response(
+                profile, user_message, topic_category, conversation_context
+            )
+            
+            if response and not self._is_duplicate_response(response, profile["name"]):
+                # 更新成员状态
+                self._update_agent_state(profile, user_message, response, topic_category)
+                
+                # 缓存回复，避免重复
+                self._cache_response(response, profile["name"])
+                
+                return {
+                    "agent_id": agent_info["agent_id"],
+                    "agent_name": profile["name"],
+                    "response": response,
+                    "delay": agent_info["delay"],
+                    "participation_score": agent_info["participation_score"],
+                    "response_type": "llm_generated"
+                }
+            
+            return None
+            
+        except Exception as e:
+            print(f"❌ 生成 {agent_info['agent_name']} 回复失败: {str(e)}")
+            return None
 
 # 创建全局实例
 smart_chat_handler = SmartChatHandler() 
