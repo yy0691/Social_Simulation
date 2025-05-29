@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API直接测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: #fff;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .result {
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        .error {
+            background: rgba(255, 107, 107, 0.1);
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            color: #ff6b6b;
+        }
+        button {
+            background: linear-gradient(135deg, #00d4ff, #8b5cf6);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 API直接测试</h1>
+        
+        <div class="test-section">
+            <h2>社群状态API测试</h2>
+            <button onclick="testCommunityStatus()">测试社群状态</button>
+            <div id="status-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>AI居民API测试</h2>
+            <button onclick="testAgents()">测试AI居民</button>
+            <div id="agents-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>事件API测试</h2>
+            <button onclick="testEvents()">测试事件历史</button>
+            <div id="events-result"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://127.0.0.1:8000';
+
+        async function apiCall(endpoint) {
+            try {
+                console.log(`🚀 调用API: ${API_BASE}${endpoint}`);
+                const response = await fetch(`${API_BASE}${endpoint}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log(`✅ API响应:`, data);
+                return data;
+            } catch (error) {
+                console.error(`❌ API错误:`, error);
+                throw error;
+            }
+        }
+
+        function showResult(elementId, data) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="result">${JSON.stringify(data, null, 2)}</div>`;
+        }
+
+        function showError(elementId, error) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="error">错误: ${error.message}</div>`;
+        }
+
+        async function testCommunityStatus() {
+            try {
+                const result = await apiCall('/api/v1/community/status');
+                showResult('status-result', result);
+                
+                // 验证数据结构
+                if (result.success && result.data) {
+                    console.log('✅ 社群状态数据验证通过');
+                    console.log('人口:', result.data.population);
+                    console.log('幸福度:', result.data.happiness);
+                    console.log('健康度:', result.data.health);
+                    console.log('教育水平:', result.data.education);
+                    console.log('经济状况:', result.data.economy);
+                } else {
+                    console.log('❌ 数据结构验证失败');
+                }
+            } catch (error) {
+                showError('status-result', error);
+            }
+        }
+
+        async function testAgents() {
+            try {
+                const result = await apiCall('/api/v1/community/agents');
+                showResult('agents-result', result);
+                
+                if (result.success && result.data && result.data.agents) {
+                    console.log('✅ AI居民数据验证通过');
+                    console.log('居民数量:', result.data.agents.length);
+                    if (result.data.agents.length > 0) {
+                        console.log('第一个居民:', result.data.agents[0].name);
+                    }
+                } else {
+                    console.log('❌ 居民数据结构验证失败');
+                }
+            } catch (error) {
+                showError('agents-result', error);
+            }
+        }
+
+        async function testEvents() {
+            try {
+                const result = await apiCall('/api/v1/community/events');
+                showResult('events-result', result);
+                
+                if (result.success && result.data) {
+                    console.log('✅ 事件数据验证通过');
+                    console.log('事件数量:', result.data.events ? result.data.events.length : 0);
+                } else {
+                    console.log('❌ 事件数据结构验证失败');
+                }
+            } catch (error) {
+                showError('events-result', error);
+            }
+        }
+
+        // 页面加载时自动测试
+        window.addEventListener('load', () => {
+            console.log('🔧 开始API测试...');
+            testCommunityStatus();
+        });
+    </script>
+</body>
+</html> 

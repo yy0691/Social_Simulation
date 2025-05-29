@@ -7,8 +7,16 @@
 export interface CommunityStats {
   population: number;
   happiness: number;
-  activity: number;
-  resources: number;
+  health: number;
+  education: number;
+  economy: number;
+  simulation?: {
+    is_running: boolean;
+    agent_count: number;
+    last_update: string;
+    auto_event_interval_hours: number;
+    recent_event_count: number;
+  };
   last_updated: string;
 }
 
@@ -73,13 +81,14 @@ export interface ChatMessage {
   message: string;
   timestamp: string;
   type: 'user' | 'ai' | 'system';
+  isAgent?: boolean;
 }
 
 // 应用状态接口
 export interface AppState {
   isConnected: boolean;
   isLoading: boolean;
-  currentView: 'community' | 'chat' | 'settings';
+  currentView: 'community' | 'chat' | 'invitation' | 'settings' | 'showcase';
   theme: 'dark' | 'light';
 }
 

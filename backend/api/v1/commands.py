@@ -188,7 +188,7 @@ async def get_command_history(limit: int = 10, db: Session = Depends(get_db)):
                    .order_by(GameEvents.timestamp.desc())\
                    .limit(limit)\
                    .all()
-        
+    
         return {
             "success": True,
             "data": {

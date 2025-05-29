@@ -134,8 +134,14 @@
             <!-- 聊天室视图 -->
             <ChatView v-else-if="currentView === 'chat'" key="chat" />
             
+            <!-- 邀请视图 -->
+            <InvitationView v-else-if="currentView === 'invitation'" key="invitation" />
+            
             <!-- 设置视图 -->
             <SettingsView v-else-if="currentView === 'settings'" key="settings" />
+            
+            <!-- 样式展示视图 -->
+            <StyleShowcase v-else-if="currentView === 'showcase'" key="showcase" />
           </Transition>
         </div>
       </main>
@@ -167,6 +173,8 @@ import { useCommunityStore } from './stores/community';
 import CommunityView from './views/CommunityView.vue';
 import ChatView from './views/ChatView.vue';
 import SettingsView from './views/SettingsView.vue';
+import InvitationView from './views/InvitationView.vue';
+import StyleShowcase from './views/StyleShowcase.vue';
 
 // 创建一个简单的LLM状态指示器组件
 const SimpleLLMStatus = {

@@ -158,6 +158,86 @@ class ChatMessage(Base):
     def __repr__(self):
         return f"<ChatMessage(id={self.id}, sender={self.sender_name}, type={self.sender_type})>"
 
+class ExternalUser(Base):
+    """
+    外部用户表
+    存储被邀请但尚未加入的用户信息
+    """
+    __tablename__ = "external_users"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    email = Column(String(100), unique=True, index=True, comment="邮箱地址")
+    name = Column(String(100), comment="姓名")
+    phone = Column(String(20), comment="电话号码")
+    status = Column(String(20), default="pending", comment="状态：pending/invited/joined/rejected")
+    created_at = Column(DateTime, default=datetime.utcnow, comment="创建时间")
+    last_updated = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment="最后更新时间")
+    
+    def __repr__(self):
+        return f"<ExternalUser(id={self.id}, email={self.email}, status={self.status})>"
+
+class Invitation(Base):
+    """
+    邀请记录表
+    存储社群成员发出的邀请信息
+    """
+    __tablename__ = "invitations"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    invitation_code = Column(String(50), unique=True, index=True, comment="邀请码")
+    inviter_agent_id = Column(String(100), index=True, comment="邀请者（居民）ID")
+    inviter_name = Column(String(100), comment="邀请者姓名")
+    invitee_email = Column(String(100), index=True, comment="被邀请者邮箱")
+    invitee_name = Column(String(100), comment="被邀请者姓名")
+    invitation_message = Column(Text, comment="邀请消息")
+    status = Column(String(20), default="pending", comment="状态：pending/accepted/rejected/expired")
+    expires_at = Column(DateTime, comment="过期时间")
+    created_at = Column(DateTime, default=datetime.utcnow, comment="创建时间")
+    responded_at = Column(DateTime, comment="回应时间")
+    
+    def __repr__(self):
+        return f"<Invitation(id={self.id}, code={self.invitation_code}, status={self.status})>"
+
+class Friendship(Base):
+    """
+    好友关系表
+    存储社群成员之间的好友关系
+    """
+    __tablename__ = "friendships"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    agent_id_1 = Column(String(100), index=True, comment="第一个居民ID")
+    agent_name_1 = Column(String(100), comment="第一个居民姓名")
+    agent_id_2 = Column(String(100), index=True, comment="第二个居民ID")
+    agent_name_2 = Column(String(100), comment="第二个居民姓名")
+    friendship_level = Column(Float, default=50.0, comment="友谊等级(0-100)")
+    status = Column(String(20), default="active", comment="状态：active/inactive/blocked")
+    established_at = Column(DateTime, default=datetime.utcnow, comment="建立友谊时间")
+    last_interaction = Column(DateTime, default=datetime.utcnow, comment="最后互动时间")
+    
+    def __repr__(self):
+        return f"<Friendship(id={self.id}, {self.agent_name_1}-{self.agent_name_2}, level={self.friendship_level})>"
+
+class CommunityMembership(Base):
+    """
+    社群成员关系表
+    管理谁可以进入社群聊天室
+    """
+    __tablename__ = "community_memberships"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    member_id = Column(String(100), unique=True, index=True, comment="成员ID（可以是agent_id或user_id）")
+    member_name = Column(String(100), comment="成员姓名")
+    member_type = Column(String(20), comment="成员类型：agent/human")
+    status = Column(String(20), default="active", comment="状态：active/inactive/banned")
+    join_method = Column(String(20), comment="加入方式：system/invitation/application")
+    invited_by = Column(String(100), comment="邀请者ID")
+    joined_at = Column(DateTime, default=datetime.utcnow, comment="加入时间")
+    last_active = Column(DateTime, default=datetime.utcnow, comment="最后活跃时间")
+    
+    def __repr__(self):
+        return f"<CommunityMembership(id={self.id}, name={self.member_name}, type={self.member_type})>"
+
 # 导出所有模型
 __all__ = [
     "engine",
@@ -171,5 +251,9 @@ __all__ = [
     "Event",
     "GameEvents",
     "User",
-    "ChatMessage"
+    "ChatMessage",
+    "ExternalUser",
+    "Invitation",
+    "Friendship",
+    "CommunityMembership"
 ]

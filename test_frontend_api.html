@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>前端API测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: #fff;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .test-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .result {
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .error {
+            background: rgba(255, 107, 107, 0.1);
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            color: #ff6b6b;
+        }
+        .success {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            color: #22c55e;
+        }
+        button {
+            background: linear-gradient(135deg, #00d4ff, #8b5cf6);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            opacity: 0.8;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
+        }
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #00d4ff;
+        }
+        .stat-label {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 前端API测试</h1>
+        <p>测试前端与后端API的连接和数据获取</p>
+        
+        <div class="test-section">
+            <h2>📊 社群状态测试</h2>
+            <button onclick="testCommunityStatus()">获取社群状态</button>
+            <div id="status-result"></div>
+            <div id="status-display"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>👥 AI居民测试</h2>
+            <button onclick="testAgents()">获取AI居民</button>
+            <div id="agents-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>📝 事件历史测试</h2>
+            <button onclick="testEvents()">获取事件历史</button>
+            <div id="events-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>🔄 完整测试</h2>
+            <button onclick="runFullTest()">运行完整测试</button>
+            <div id="full-test-result"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://127.0.0.1:8000';
+
+        // 模拟前端API服务
+        class ApiService {
+            async get(url) {
+                const response = await fetch(`${API_BASE}${url}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                return response.json();
+            }
+
+            async getCommunityStatus() {
+                const response = await this.get('/api/v1/community/status');
+                return response.data;
+            }
+
+            async getAgents() {
+                const response = await this.get('/api/v1/community/agents');
+                return response.data;
+            }
+
+            async getEvents(limit = 10) {
+                const response = await this.get(`/api/v1/community/events?limit=${limit}`);
+                return response.data;
+            }
+        }
+
+        const api = new ApiService();
+
+        function showResult(elementId, data, isError = false) {
+            const element = document.getElementById(elementId);
+            const className = isError ? 'error' : 'result';
+            element.innerHTML = `<div class="${className}">${JSON.stringify(data, null, 2)}</div>`;
+        }
+
+        function showSuccess(elementId, message) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="success">${message}</div>`;
+        }
+
+        function displayStats(stats) {
+            const display = document.getElementById('status-display');
+            if (!stats) return;
+
+            // 计算活跃度
+            const activity = Math.round((stats.happiness * 0.4 + stats.health * 0.3 + stats.economy * 0.3));
+
+            display.innerHTML = `
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value">${stats.population || 0}</div>
+                        <div class="stat-label">社群人口</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${activity}%</div>
+                        <div class="stat-label">活跃度</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${Math.round(stats.happiness || 0)}%</div>
+                        <div class="stat-label">幸福指数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${Math.round(stats.health || 0)}%</div>
+                        <div class="stat-label">健康度</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${Math.round(stats.education || 0)}%</div>
+                        <div class="stat-label">教育水平</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${Math.round(stats.economy || 0)}%</div>
+                        <div class="stat-label">经济状况</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function testCommunityStatus() {
+            try {
+                console.log('🚀 测试社群状态API...');
+                const stats = await api.getCommunityStatus();
+                console.log('📊 获取到的社群状态:', stats);
+                
+                showResult('status-result', stats);
+                displayStats(stats);
+                
+                if (stats && stats.population > 0) {
+                    showSuccess('status-result', '✅ 社群状态API测试成功！数据正常显示。');
+                } else {
+                    showResult('status-result', '❌ 数据异常：人口为0或数据为空', true);
+                }
+            } catch (error) {
+                console.error('❌ 社群状态API测试失败:', error);
+                showResult('status-result', error.message, true);
+            }
+        }
+
+        async function testAgents() {
+            try {
+                console.log('🚀 测试AI居民API...');
+                const agentsData = await api.getAgents();
+                console.log('👥 获取到的AI居民:', agentsData);
+                
+                showResult('agents-result', agentsData);
+                
+                if (agentsData && agentsData.agents && agentsData.agents.length > 0) {
+                    showSuccess('agents-result', `✅ AI居民API测试成功！获取到${agentsData.agents.length}个居民。`);
+                } else {
+                    showResult('agents-result', '❌ 数据异常：没有AI居民数据', true);
+                }
+            } catch (error) {
+                console.error('❌ AI居民API测试失败:', error);
+                showResult('agents-result', error.message, true);
+            }
+        }
+
+        async function testEvents() {
+            try {
+                console.log('🚀 测试事件历史API...');
+                const eventsData = await api.getEvents();
+                console.log('📝 获取到的事件:', eventsData);
+                
+                showResult('events-result', eventsData);
+                
+                if (eventsData && eventsData.events) {
+                    showSuccess('events-result', `✅ 事件历史API测试成功！获取到${eventsData.events.length}个事件。`);
+                } else {
+                    showResult('events-result', '❌ 数据异常：没有事件数据', true);
+                }
+            } catch (error) {
+                console.error('❌ 事件历史API测试失败:', error);
+                showResult('events-result', error.message, true);
+            }
+        }
+
+        async function runFullTest() {
+            const resultDiv = document.getElementById('full-test-result');
+            resultDiv.innerHTML = '<div class="result">🔄 正在运行完整测试...</div>';
+            
+            const results = {
+                community: false,
+                agents: false,
+                events: false
+            };
+
+            try {
+                // 测试社群状态
+                const stats = await api.getCommunityStatus();
+                results.community = stats && stats.population > 0;
+                
+                // 测试AI居民
+                const agentsData = await api.getAgents();
+                results.agents = agentsData && agentsData.agents && agentsData.agents.length > 0;
+                
+                // 测试事件
+                const eventsData = await api.getEvents();
+                results.events = eventsData && eventsData.events;
+                
+                const allPassed = Object.values(results).every(r => r);
+                const summary = `
+测试结果总结:
+- 社群状态API: ${results.community ? '✅ 通过' : '❌ 失败'}
+- AI居民API: ${results.agents ? '✅ 通过' : '❌ 失败'}
+- 事件历史API: ${results.events ? '✅ 通过' : '❌ 失败'}
+
+总体状态: ${allPassed ? '🎉 所有测试通过！' : '⚠️ 部分测试失败'}
+                `;
+                
+                if (allPassed) {
+                    showSuccess('full-test-result', summary);
+                } else {
+                    showResult('full-test-result', summary, true);
+                }
+                
+            } catch (error) {
+                showResult('full-test-result', `完整测试失败: ${error.message}`, true);
+            }
+        }
+
+        // 页面加载时自动运行测试
+        window.addEventListener('load', () => {
+            console.log('🧪 页面加载完成，开始自动测试...');
+            setTimeout(testCommunityStatus, 1000);
+        });
+    </script>
+</body>
+</html> 

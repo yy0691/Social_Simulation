@@ -12,7 +12,7 @@ export const useAppStore = defineStore('app', () => {
   // 状态变量
   const isConnected = ref(false);
   const isLoading = ref(false);
-  const currentView = ref<'community' | 'chat' | 'settings'>('community');
+  const currentView = ref<'community' | 'chat' | 'invitation' | 'settings' | 'showcase'>('community');
   const theme = ref<'dark' | 'light'>('dark');
   const notifications = ref<Notification[]>([]);
   const connectionChecking = ref(false);
@@ -42,10 +42,22 @@ export const useAppStore = defineStore('app', () => {
       component: 'ChatView'
     },
     {
+      key: 'invitation',
+      label: '邀请管理',
+      icon: 'fas fa-user-plus',
+      component: 'InvitationView'
+    },
+    {
       key: 'settings',
       label: '设置',
       icon: 'fas fa-cog',
       component: 'SettingsView'
+    },
+    {
+      key: 'showcase',
+      label: '样式展示',
+      icon: 'fas fa-palette',
+      component: 'StyleShowcase'
     }
   ];
 
@@ -99,7 +111,7 @@ export const useAppStore = defineStore('app', () => {
   };
 
   // 切换视图
-  const setCurrentView = (view: 'community' | 'chat' | 'settings') => {
+  const setCurrentView = (view: 'community' | 'chat' | 'invitation' | 'settings' | 'showcase') => {
     currentView.value = view;
   };
 

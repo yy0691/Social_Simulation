@@ -111,7 +111,6 @@
               :loading-history="loadingHistory"
               :show-typing-indicator="isAITyping"
               :auto-scroll="chatSettings.autoScroll"
-              max-height="500px"
               @load-more-history="loadMoreHistory"
               @message-click="onMessageClick"
             />
@@ -158,6 +157,7 @@ interface Message {
   timestamp: string | Date
   isUser?: boolean
   isAI?: boolean
+  isAgent?: boolean
   status?: 'sending' | 'sent' | 'error'
   showStatus?: boolean
 }
@@ -223,59 +223,45 @@ const connectionText = computed(() => {
 const sendMessage = async (content: string) => {
   if (!content.trim() || isSending.value) return
 
-  // 添加用户消息
-  const userMessage: Message = {
-    id: `user-${Date.now()}`,
-    content,
-    sender: '用户',
-    timestamp: new Date(),
-    isUser: true,
-    status: 'sent',
-    showStatus: chatSettings.showStatus
-  }
-  
-  messages.value.push(userMessage)
-  
-  // 开始发送状态
   isSending.value = true
   
   try {
-    // 模拟AI思考时间
-    isAITyping.value = true
-    await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000))
+    // 发送消息到后端API
+    const response = await fetch('http://127.0.0.1:8000/api/v1/chat/send', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ message: content })
+    })
     
-    // 添加AI回复
-    const aiMessage: Message = {
-      id: `ai-${Date.now()}`,
-      content: generateAIResponse(content),
-      sender: 'AI助手',
-      timestamp: new Date(),
-      isAI: true,
-      status: 'sent',
-      showStatus: chatSettings.showStatus
+    const data = await response.json()
+    
+    if (data.success) {
+      // 立即刷新消息列表以显示新消息
+      await loadChatMessages()
+      
+      // 显示AI正在思考状态
+      isAITyping.value = true
+      
+      // 启动密集刷新策略，确保及时获取居民回复
+      startIntensiveRefresh()
+      
+      // 等待一段时间后停止AI思考状态
+      setTimeout(() => {
+        isAITyping.value = false
+      }, 5000)
+      
+      console.log('💬 消息发送成功，正在等待居民回复...')
+    } else {
+      console.error('发送消息失败:', data.error)
     }
-    
-    messages.value.push(aiMessage)
     
   } catch (error) {
     console.error('发送消息失败:', error)
-    // 更新用户消息状态为错误
-    userMessage.status = 'error'
   } finally {
     isSending.value = false
-    isAITyping.value = false
   }
-}
-
-const generateAIResponse = (userInput: string): string => {
-  const responses = [
-    `很有趣的想法！关于"${userInput}"，我觉得这会对社群产生积极的影响。`,
-    `我理解你的观点。在AI社群中，${userInput}确实是一个值得深入讨论的话题。`,
-    `感谢你的分享！这让我想到了社群中其他居民的想法。`,
-    `这是个不错的建议！我会将"${userInput}"记录下来，并与其他AI居民讨论。`,
-    `很好的问题！让我们一起探索这个话题在虚拟社群中的可能性。`
-  ]
-  return responses[Math.floor(Math.random() * responses.length)]
 }
 
 const onUserTyping = () => {
@@ -333,18 +319,96 @@ const formatTime = (date: Date): string => {
 }
 
 // 生命周期
-onMounted(() => {
-  // 添加一些初始消息
-  messages.value = [
-    {
-      id: 'welcome',
-      content: '欢迎来到AI社群聊天室！我是你的AI助手，有什么问题都可以问我。',
-      sender: 'AI助手',
-      timestamp: new Date(),
-      isAI: true
-    }
-  ]
+onMounted(async () => {
+  // 加载真实的聊天消息
+  await loadChatMessages()
+  
+  // 启动正常刷新策略
+  startNormalRefresh()
+  
+  console.log('💬 聊天室已加载，开始监听新消息')
 })
+
+onUnmounted(() => {
+  // 清理定时器
+  if (refreshInterval) {
+    clearInterval(refreshInterval)
+  }
+  if (intensiveRefreshTimeout) {
+    clearTimeout(intensiveRefreshTimeout)
+  }
+})
+
+// 新增方法：加载聊天消息
+const loadChatMessages = async () => {
+  try {
+    const response = await fetch('http://127.0.0.1:8000/api/v1/chat/messages?limit=50')
+    const data = await response.json()
+    
+    if (data.success) {
+      // 更新消息列表，保持现有消息的状态
+      const newMessages = data.data.messages.map((msg: any) => ({
+        id: msg.id.toString(),
+        content: msg.content,
+        sender: msg.sender,
+        timestamp: new Date(msg.timestamp),
+        isUser: msg.isUser,
+        isAI: msg.isAI,
+        isAgent: msg.isAgent,
+        status: 'sent',
+        showStatus: chatSettings.showStatus
+      }))
+      
+      // 只有当消息数量发生变化时才更新
+      if (newMessages.length !== messages.value.length) {
+        messages.value = newMessages
+        
+        // 如果有新的居民消息，显示通知
+        const newAgentMessages = newMessages.filter((msg: Message) => 
+          msg.isAgent && !messages.value.some((oldMsg: Message) => oldMsg.id === msg.id)
+        )
+        
+        if (newAgentMessages.length > 0 && chatSettings.notifications) {
+          console.log(`📢 收到 ${newAgentMessages.length} 条新的居民消息`)
+        }
+      }
+    }
+  } catch (error) {
+    console.error('加载聊天消息失败:', error)
+  }
+}
+
+// 智能刷新策略
+let refreshInterval: number | null = null
+let intensiveRefreshTimeout: number | null = null
+
+const startIntensiveRefresh = () => {
+  // 发送消息后的30秒内，每2秒刷新一次
+  if (intensiveRefreshTimeout) {
+    clearTimeout(intensiveRefreshTimeout)
+  }
+  
+  const intensiveRefresh = setInterval(async () => {
+    await loadChatMessages()
+  }, 2000)
+  
+  intensiveRefreshTimeout = setTimeout(() => {
+    clearInterval(intensiveRefresh)
+    intensiveRefreshTimeout = null
+    console.log('🔄 切换到正常刷新频率')
+  }, 30000) // 30秒后停止密集刷新
+}
+
+const startNormalRefresh = () => {
+  // 正常情况下每10秒刷新一次
+  if (refreshInterval) {
+    clearInterval(refreshInterval)
+  }
+  
+  refreshInterval = setInterval(async () => {
+    await loadChatMessages()
+  }, 10000)
+}
 </script>
 
 <style scoped>
@@ -370,6 +434,7 @@ onMounted(() => {
 /* 聊天头部 */
 .chat-header {
   flex-shrink: 0;
+  height: auto;
 }
 
 .header-content {
@@ -422,7 +487,8 @@ onMounted(() => {
   display: flex;
   flex: 1;
   gap: 1rem;
-  min-height: 0;
+  min-height: 0; /* 重要：确保flex子元素可以正确收缩 */
+  overflow: hidden; /* 防止内容溢出 */
 }
 
 .chat-sidebar {
@@ -549,17 +615,22 @@ onMounted(() => {
 .messages-area {
   flex: 1;
   min-width: 0;
+  min-height: 0; /* 确保可以正确收缩 */
+  overflow: hidden; /* 防止溢出 */
 }
 
 .messages-panel {
   height: 100%;
   display: flex;
   flex-direction: column;
+  min-height: 0; /* 确保flex子元素可以收缩 */
 }
 
 /* 输入区域 */
 .chat-input-area {
   flex-shrink: 0;
+  height: auto; /* 根据内容自动调整高度 */
+  margin-top: 0.5rem; /* 增加与消息区域的间距 */
 }
 
 .input-panel {
@@ -600,6 +671,7 @@ onMounted(() => {
 @media (max-width: 768px) {
   .chat-content {
     padding: 0.5rem;
+    gap: 0.5rem; /* 减小移动端的间距 */
   }
   
   .chat-sidebar {
@@ -624,6 +696,30 @@ onMounted(() => {
   
   .chat-details h2 {
     font-size: 1.2rem;
+  }
+  
+  /* 移动端优化消息区域 */
+  .messages-area {
+    min-height: 300px; /* 确保移动端有最小高度 */
+  }
+  
+  .chat-input-area {
+    margin-top: 0.25rem; /* 减小移动端间距 */
+  }
+  
+  .input-panel {
+    padding: 0.75rem; /* 减小移动端padding */
+  }
+}
+
+/* 更大屏幕的优化 */
+@media (min-width: 1200px) {
+  .chat-content {
+    padding: 1.5rem;
+  }
+  
+  .messages-area {
+    min-height: 400px; /* 确保大屏幕有合适的最小高度 */
   }
 }
 </style> 

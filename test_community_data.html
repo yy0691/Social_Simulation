@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>社群数据测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: #fff;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .data-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
+        }
+        .stat-card {
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #00d4ff;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #ccc;
+            margin-top: 5px;
+        }
+        .agent-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+        .agent-card {
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 8px;
+            padding: 10px;
+        }
+        .error {
+            color: #ff6b6b;
+            background: rgba(255, 107, 107, 0.1);
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+        }
+        button {
+            background: linear-gradient(135deg, #00d4ff, #8b5cf6);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 AI社群模拟小游戏 - 数据测试</h1>
+        
+        <div>
+            <button onclick="loadCommunityStats()">加载社群统计</button>
+            <button onclick="loadAgents()">加载AI居民</button>
+            <button onclick="loadEvents()">加载事件历史</button>
+            <button onclick="loadAll()">加载所有数据</button>
+        </div>
+
+        <div id="community-stats" class="data-section" style="display: none;">
+            <h2>📊 社群统计</h2>
+            <div id="stats-content"></div>
+        </div>
+
+        <div id="agents-data" class="data-section" style="display: none;">
+            <h2>👥 AI居民 (<span id="agent-count">0</span>)</h2>
+            <div id="agents-content"></div>
+        </div>
+
+        <div id="events-data" class="data-section" style="display: none;">
+            <h2>📝 最近事件</h2>
+            <div id="events-content"></div>
+        </div>
+
+        <div id="error-display" class="error" style="display: none;"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000';
+
+        async function apiCall(endpoint) {
+            try {
+                const response = await fetch(`${API_BASE}${endpoint}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                return await response.json();
+            } catch (error) {
+                showError(`API调用失败: ${error.message}`);
+                throw error;
+            }
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('error-display');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        async function loadCommunityStats() {
+            try {
+                const result = await apiCall('/api/v1/community/status');
+                const stats = result.data;
+                
+                const statsHtml = `
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value">${stats.population}</div>
+                            <div class="stat-label">社群人口</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">${Math.round(stats.happiness)}%</div>
+                            <div class="stat-label">幸福指数</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">${Math.round(stats.health)}%</div>
+                            <div class="stat-label">健康度</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">${Math.round(stats.education)}%</div>
+                            <div class="stat-label">教育水平</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">${Math.round(stats.economy)}%</div>
+                            <div class="stat-label">经济状况</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">${Math.round(calculateActivity(stats))}%</div>
+                            <div class="stat-label">活跃度</div>
+                        </div>
+                    </div>
+                    <p><strong>模拟状态:</strong> ${stats.simulation?.is_running ? '运行中' : '已停止'}</p>
+                    <p><strong>最后更新:</strong> ${new Date(stats.last_updated).toLocaleString('zh-CN')}</p>
+                `;
+                
+                document.getElementById('stats-content').innerHTML = statsHtml;
+                document.getElementById('community-stats').style.display = 'block';
+            } catch (error) {
+                console.error('加载社群统计失败:', error);
+            }
+        }
+
+        async function loadAgents() {
+            try {
+                const result = await apiCall('/api/v1/community/agents');
+                const agents = result.data.agents;
+                
+                document.getElementById('agent-count').textContent = agents.length;
+                
+                const agentsHtml = agents.map(agent => `
+                    <div class="agent-card">
+                        <h4>${agent.name}</h4>
+                        <p><strong>职业:</strong> ${agent.occupation}</p>
+                        <p><strong>性格:</strong> ${agent.personality}</p>
+                        <p><strong>年龄:</strong> ${agent.age}</p>
+                        <p><strong>幸福度:</strong> ${Math.round(agent.happiness)}%</p>
+                        <p><strong>健康度:</strong> ${Math.round(agent.health)}%</p>
+                        <p><strong>教育:</strong> ${Math.round(agent.education)}%</p>
+                        <p><strong>财富:</strong> ${Math.round(agent.wealth)}%</p>
+                    </div>
+                `).join('');
+                
+                document.getElementById('agents-content').innerHTML = `<div class="agent-list">${agentsHtml}</div>`;
+                document.getElementById('agents-data').style.display = 'block';
+            } catch (error) {
+                console.error('加载AI居民失败:', error);
+            }
+        }
+
+        async function loadEvents() {
+            try {
+                const result = await apiCall('/api/v1/community/events');
+                const events = result.data.events;
+                
+                const eventsHtml = events.length > 0 ? 
+                    events.map(event => `
+                        <div class="agent-card">
+                            <h4>${event.title || '未知事件'}</h4>
+                            <p>${event.description}</p>
+                            <p><strong>类型:</strong> ${event.event_type || event.type}</p>
+                            <p><strong>时间:</strong> ${new Date(event.timestamp).toLocaleString('zh-CN')}</p>
+                        </div>
+                    `).join('') : '<p>暂无事件记录</p>';
+                
+                document.getElementById('events-content').innerHTML = `<div class="agent-list">${eventsHtml}</div>`;
+                document.getElementById('events-data').style.display = 'block';
+            } catch (error) {
+                console.error('加载事件历史失败:', error);
+            }
+        }
+
+        function calculateActivity(stats) {
+            const happiness = stats.happiness || 0;
+            const health = stats.health || 0;
+            const economy = stats.economy || 0;
+            return Math.max(0, Math.min(100, happiness * 0.4 + health * 0.3 + economy * 0.3));
+        }
+
+        async function loadAll() {
+            await Promise.all([
+                loadCommunityStats(),
+                loadAgents(),
+                loadEvents()
+            ]);
+        }
+
+        // 页面加载时自动加载所有数据
+        window.addEventListener('load', loadAll);
+    </script>
+</body>
+</html> 

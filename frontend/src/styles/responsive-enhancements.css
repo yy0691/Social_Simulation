@@ -1,0 +1,470 @@
+/* 响应式增强效果 - AI社群模拟小游戏 */
+
+/* 基础断点定义 */
+:root {
+  --breakpoint-xs: 480px;
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
+}
+
+/* 移动端优化 */
+@media (max-width: 768px) {
+  /* 触摸友好的按钮尺寸 */
+  .neon-button {
+    min-height: 44px;
+    min-width: 44px;
+    padding: var(--spacing-sm) var(--spacing-lg);
+    font-size: 0.875rem;
+  }
+  
+  .neon-button.icon-only {
+    min-width: 44px;
+    min-height: 44px;
+    padding: var(--spacing-sm);
+  }
+  
+  /* 移动端卡片间距优化 */
+  .neon-card {
+    margin: var(--spacing-md);
+    padding: var(--spacing-lg);
+    border-radius: var(--radius-lg);
+  }
+  
+  /* 移动端导航优化 */
+  .app-header {
+    padding: var(--spacing-sm) var(--spacing-md);
+  }
+  
+  .header-nav {
+    gap: var(--spacing-sm);
+  }
+  
+  .nav-button {
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: 0.8rem;
+  }
+  
+  /* 移动端聊天界面优化 */
+  .chat-container {
+    padding: var(--spacing-sm);
+  }
+  
+  .message-bubble {
+    max-width: 85%;
+    padding: var(--spacing-md);
+    font-size: 0.875rem;
+  }
+  
+  .chat-input-container {
+    padding: var(--spacing-md);
+    gap: var(--spacing-sm);
+  }
+  
+  .chat-input {
+    font-size: 16px; /* 防止iOS缩放 */
+    padding: var(--spacing-md);
+  }
+  
+  /* 移动端表单优化 */
+  .neon-input-field {
+    font-size: 16px; /* 防止iOS缩放 */
+    padding: var(--spacing-md) var(--spacing-lg);
+    min-height: 44px;
+  }
+  
+  /* 移动端状态指示器 */
+  .status-indicator {
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: 0.8rem;
+  }
+  
+  /* 移动端工具提示隐藏 */
+  .tooltip {
+    display: none;
+  }
+  
+  /* 移动端进度条增大 */
+  .progress-bar {
+    height: 10px;
+  }
+}
+
+/* 小屏手机优化 */
+@media (max-width: 480px) {
+  /* 超小屏幕按钮优化 */
+  .neon-button {
+    padding: var(--spacing-xs) var(--spacing-md);
+    font-size: 0.8rem;
+    min-height: 40px;
+  }
+  
+  /* 紧凑型卡片 */
+  .neon-card {
+    margin: var(--spacing-sm);
+    padding: var(--spacing-md);
+    border-radius: var(--radius-md);
+  }
+  
+  /* 简化头部导航 */
+  .nav-button span {
+    display: none; /* 只显示图标 */
+  }
+  
+  .nav-button {
+    min-width: 40px;
+    height: 40px;
+    padding: var(--spacing-xs);
+    justify-content: center;
+  }
+  
+  /* 聊天气泡优化 */
+  .message-bubble {
+    max-width: 90%;
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: 0.85rem;
+    line-height: 1.4;
+  }
+  
+  /* 输入框紧凑化 */
+  .chat-input-container {
+    padding: var(--spacing-sm);
+  }
+  
+  .chat-input {
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: 16px;
+  }
+  
+  /* 状态栏简化 */
+  .app-footer {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    font-size: 0.75rem;
+  }
+  
+  .footer-content {
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    text-align: center;
+  }
+}
+
+/* 平板优化 */
+@media (min-width: 769px) and (max-width: 1024px) {
+  /* 平板按钮组优化 */
+  .neon-button {
+    padding: var(--spacing-md) var(--spacing-xl);
+    font-size: 0.9rem;
+  }
+  
+  /* 平板卡片网格 */
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-lg);
+  }
+  
+  /* 平板聊天界面 */
+  .chat-container {
+    max-width: 90%;
+    margin: 0 auto;
+  }
+  
+  .message-bubble {
+    max-width: 75%;
+  }
+}
+
+/* 桌面端优化 */
+@media (min-width: 1025px) {
+  /* 桌面端悬浮效果增强 */
+  .neon-button:hover {
+    transform: translateY(-3px) scale(1.05);
+  }
+  
+  .neon-card:hover {
+    transform: translateY(-6px) scale(1.03);
+  }
+  
+  /* 桌面端工具提示增强 */
+  .tooltip {
+    font-size: 0.8rem;
+    padding: var(--spacing-sm) var(--spacing-md);
+  }
+  
+  /* 桌面端进度条动画增强 */
+  .progress-fill::after {
+    animation-duration: 1.5s;
+  }
+  
+  /* 桌面端状态指示器脉冲 */
+  .status-indicator.online .status-dot {
+    animation: statusPulse 2s infinite;
+  }
+  
+  @keyframes statusPulse {
+    0%, 100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.7;
+      transform: scale(1.2);
+    }
+  }
+}
+
+/* 高分辨率屏幕优化 */
+@media (min-width: 1440px) {
+  /* 超大屏容器优化 */
+  .app-container {
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  
+  /* 大屏卡片网格 */
+  .stats-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--spacing-xl);
+  }
+  
+  /* 大屏字体优化 */
+  .neon-button {
+    font-size: 1rem;
+    padding: var(--spacing-lg) var(--spacing-2xl);
+  }
+  
+  .message-bubble {
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+}
+
+/* 触摸设备优化 */
+@media (hover: none) and (pointer: coarse) {
+  /* 移除悬浮效果 */
+  .neon-button:hover,
+  .neon-card:hover,
+  .message-bubble:hover {
+    transform: none;
+    box-shadow: none;
+  }
+  
+  /* 增强点击反馈 */
+  .neon-button:active {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+  
+  .neon-card:active {
+    transform: scale(0.98);
+    opacity: 0.9;
+  }
+  
+  /* 触摸友好的交互区域 */
+  .clickable {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* 禁用工具提示 */
+  .tooltip,
+  .message-tooltip {
+    display: none !important;
+  }
+}
+
+/* 键盘导航优化 */
+@media (hover: hover) and (pointer: fine) {
+  /* 键盘焦点增强 */
+  .neon-button:focus-visible,
+  .neon-input-field:focus-visible {
+    outline: 2px solid var(--neon-blue);
+    outline-offset: 2px;
+    box-shadow: 
+      0 0 0 2px var(--bg-dark),
+      0 0 0 4px var(--neon-blue);
+  }
+  
+  /* 鼠标悬浮指针 */
+  .neon-button,
+  .neon-card,
+  .clickable {
+    cursor: pointer;
+  }
+}
+
+/* 横屏手机优化 */
+@media (max-height: 480px) and (orientation: landscape) {
+  /* 横屏头部紧凑化 */
+  .app-header {
+    padding: var(--spacing-xs) var(--spacing-md);
+  }
+  
+  .nav-button {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    height: 36px;
+    font-size: 0.75rem;
+  }
+  
+  /* 横屏聊天优化 */
+  .chat-container {
+    height: calc(100vh - 100px);
+  }
+  
+  .message-bubble {
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: 0.8rem;
+  }
+  
+  /* 横屏状态栏隐藏 */
+  .app-footer {
+    display: none;
+  }
+}
+
+/* 深色模式响应式优化 */
+@media (prefers-color-scheme: dark) {
+  .light {
+    /* 强制深色模式下的响应式调整 */
+    --shadow-heavy: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 60px rgba(0, 212, 255, 0.15);
+  }
+}
+
+/* 高对比度响应式 */
+@media (prefers-contrast: high) {
+  @media (max-width: 768px) {
+    .neon-button,
+    .neon-card,
+    .status-indicator {
+      border-width: 3px;
+    }
+    
+    .message-bubble {
+      border-width: 2px;
+    }
+  }
+}
+
+/* 减少动画响应式 */
+@media (prefers-reduced-motion: reduce) {
+  @media (max-width: 768px) {
+    * {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+/* 打印样式 */
+@media print {
+  /* 隐藏不必要的元素 */
+  .app-header,
+  .app-footer,
+  .neon-button,
+  .chat-input-container {
+    display: none;
+  }
+  
+  /* 优化打印颜色 */
+  .neon-card,
+  .glass-panel {
+    background: white;
+    color: black;
+    border: 1px solid #ccc;
+    box-shadow: none;
+  }
+  
+  /* 打印字体优化 */
+  body {
+    font-family: serif;
+    line-height: 1.6;
+  }
+}
+
+/* 容器查询支持（现代浏览器） */
+@supports (container-type: inline-size) {
+  .responsive-container {
+    container-type: inline-size;
+  }
+  
+  @container (max-width: 400px) {
+    .neon-button {
+      padding: var(--spacing-xs) var(--spacing-sm);
+      font-size: 0.75rem;
+    }
+    
+    .neon-card {
+      padding: var(--spacing-sm);
+    }
+  }
+  
+  @container (min-width: 600px) {
+    .stats-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  
+  @container (min-width: 900px) {
+    .stats-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+}
+
+/* 设备像素比优化 */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  /* 高DPI设备图标优化 */
+  .icon {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+  
+  /* 高DPI边框优化 */
+  .neon-button,
+  .neon-card {
+    border-width: 0.5px;
+  }
+}
+
+/* 网络状态优化 */
+@media (prefers-reduced-data: reduce) {
+  /* 数据节省模式 */
+  .particles,
+  .stars,
+  .floating-particles {
+    display: none;
+  }
+  
+  .progress-fill::after,
+  .badge::before {
+    animation: none;
+  }
+}
+
+/* 可访问性增强 */
+@media (prefers-reduced-transparency: reduce) {
+  .glass-panel,
+  .neon-card {
+    backdrop-filter: none;
+    background: var(--bg-darker);
+  }
+}
+
+/* 安全区域适配（刘海屏等） */
+@supports (padding: max(0px)) {
+  .app-container {
+    padding-left: max(var(--spacing-md), env(safe-area-inset-left));
+    padding-right: max(var(--spacing-md), env(safe-area-inset-right));
+  }
+  
+  .app-header {
+    padding-top: max(var(--spacing-sm), env(safe-area-inset-top));
+  }
+  
+  .app-footer {
+    padding-bottom: max(var(--spacing-sm), env(safe-area-inset-bottom));
+  }
+} 

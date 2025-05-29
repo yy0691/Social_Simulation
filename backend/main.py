@@ -52,7 +52,7 @@ import logging
 from datetime import datetime
 
 # 导入API路由
-from api.v1 import community, commands, chat, system
+from api.v1 import community, commands, chat, system, invitation
 
 # 导入模拟和LLM模块
 from modules.simulation import community_simulation
@@ -90,6 +90,7 @@ app.include_router(community.router, prefix="/api/v1")
 app.include_router(commands.router, prefix="/api/v1")
 app.include_router(chat.router, prefix="/api/v1")
 app.include_router(system.router, prefix="/api/v1")
+app.include_router(invitation.router, prefix="/api/v1")
 
 # 启动事件处理
 @app.on_event("startup")

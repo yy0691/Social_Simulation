@@ -80,21 +80,23 @@ class ApiService {
 
   // 获取社群状态
   async getCommunityStatus(): Promise<CommunityStats> {
-    return this.get('/api/v1/community/status');
+    const response = await this.get<{ success: boolean; data: CommunityStats }>('/api/v1/community/status');
+    return response.data;
   }
 
   // 获取AI居民列表
   async getAgents(): Promise<{ agents: Agent[]; total_count: number }> {
-    return this.get('/api/v1/community/agents');
+    const response = await this.get<{ success: boolean; data: { agents: Agent[]; total_count: number } }>('/api/v1/community/agents');
+    return response.data;
   }
 
   // 获取事件历史
   async getEvents(limit: number = 10, offset: number = 0): Promise<{ 
     events: Event[]; 
-    limit: number; 
-    offset: number; 
+    total_count: number; 
   }> {
-    return this.get(`/api/v1/community/events?limit=${limit}&offset=${offset}`);
+    const response = await this.get<{ success: boolean; data: { events: Event[]; total_count: number } }>(`/api/v1/community/events?limit=${limit}&offset=${offset}`);
+    return response.data;
   }
 
   // 获取统计汇总
@@ -106,7 +108,8 @@ class ApiService {
     };
     last_updated: string;
   }> {
-    return this.get('/api/v1/community/stats/summary');
+    const response = await this.get<{ success: boolean; data: any }>('/api/v1/community/stats/summary');
+    return response.data;
   }
 
   // 执行玩家指令

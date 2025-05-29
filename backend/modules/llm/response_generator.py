@@ -174,7 +174,7 @@ class ResponseGenerator:
                 model=self.config.model,
                 messages=messages,
                 max_tokens=self.config.max_tokens,
-                temperature=self.config.temperature,
+                temperature=0.9 if "conversation" in prompt_name else self.config.temperature,  # 对话回复使用更高的温度
                 response_format={"type": "json_object"} if "JSON" in system_prompt else None
             )
             
@@ -375,6 +375,252 @@ class ResponseGenerator:
                 "message": f"响应生成出错: {str(e)}",
                 "agent_response": "抱歉，我现在无法回复。"
             }
+    
+    async def generate_agent_conversation_response(
+        self,
+        agent_info: Dict[str, Any],
+        original_topic: str,
+        conversation_history: List[str],
+        current_conversation: List[str],
+        agent_own_history: List[str],
+        community_stats: Dict[str, Any],
+        recent_events: List[str],
+        is_first_speaker: bool = False
+    ) -> Dict[str, Any]:
+        """
+        生成基于对话历史的居民回复
+        
+        Args:
+            agent_info: 居民信息
+            original_topic: 原始话题
+            conversation_history: 聊天室的对话历史
+            current_conversation: 当前这轮对话中前面居民的发言
+            agent_own_history: 该居民自己的历史发言记录
+            community_stats: 社群统计数据
+            recent_events: 最近事件
+            is_first_speaker: 是否是第一个发言的居民
+            
+        Returns:
+            Dict: 包含居民回复的字典
+        """
+        try:
+            # 如果LLM客户端可用，尝试使用LLM生成回复
+            if self.client:
+                # 构建对话上下文
+                context_parts = []
+                
+                if conversation_history:
+                    context_parts.append("最近的聊天记录：")
+                    context_parts.extend(conversation_history[-5:])  # 只取最近5条
+                
+                if current_conversation and not is_first_speaker:
+                    context_parts.append("\n本轮对话中前面居民的发言：")
+                    context_parts.extend(current_conversation)
+                
+                # 添加居民自己的历史发言
+                if agent_own_history:
+                    context_parts.append("\n我自己之前的发言：")
+                    context_parts.extend(agent_own_history[-3:])  # 只取最近3条自己的发言
+                
+                conversation_context = "\n".join(context_parts) if context_parts else "暂无对话历史"
+                
+                # 使用专门的对话回复提示词
+                response = await self.generate_response(
+                    "agent_conversation_response",
+                    agent_name=agent_info.get("name", "未知居民"),
+                    personality=agent_info.get("personality", "友好"),
+                    occupation=agent_info.get("occupation", "居民"),
+                    age=agent_info.get("age", 30),
+                    interests=", ".join(agent_info.get("interests", ["聊天"])),
+                    happiness=community_stats.get("happiness", 50),
+                    health=community_stats.get("health", 50),
+                    education=community_stats.get("education", 50),
+                    economy=community_stats.get("economy", 50),
+                    recent_events="\n".join(recent_events) if recent_events else "暂无最近事件",
+                    original_topic=original_topic,
+                    conversation_context=conversation_context,
+                    is_first_speaker=is_first_speaker
+                )
+                
+                if response.success:
+                    try:
+                        # 尝试解析JSON响应
+                        response_data = json.loads(response.content)
+                        return {
+                            "success": True,
+                            "agent_response": response_data.get("agent_response", ""),
+                            "response_type": response_data.get("response_type", "normal"),
+                            "emotion": response_data.get("emotion", "neutral"),
+                            "usage": response.usage
+                        }
+                    except json.JSONDecodeError:
+                        # 如果不是JSON格式，直接使用内容作为回复
+                        return {
+                            "success": True,
+                            "agent_response": response.content.strip(),
+                            "response_type": "normal",
+                            "emotion": "neutral",
+                            "usage": response.usage
+                        }
+            
+            # LLM不可用或调用失败时，使用智能备用回复
+            self.logger.warning("LLM不可用，使用智能备用回复机制")
+            agent_response = self._generate_intelligent_fallback_response(
+                agent_info, original_topic, conversation_history, current_conversation, agent_own_history, is_first_speaker
+            )
+            
+            return {
+                "success": True,
+                "agent_response": agent_response,
+                "response_type": "fallback",
+                "emotion": "neutral",
+                "usage": {}
+            }
+                
+        except Exception as e:
+            self.logger.error(f"生成居民对话回复失败: {str(e)}")
+            # 最后的备用回复
+            agent_response = self._generate_intelligent_fallback_response(
+                agent_info, original_topic, conversation_history, current_conversation, agent_own_history, is_first_speaker
+            )
+            
+            return {
+                "success": True,
+                "agent_response": agent_response,
+                "response_type": "fallback",
+                "emotion": "neutral",
+                "usage": {}
+            }
+    
+    def _generate_intelligent_fallback_response(
+        self, 
+        agent_info: Dict[str, Any], 
+        original_topic: str, 
+        conversation_history: List[str], 
+        current_conversation: List[str], 
+        agent_own_history: List[str],
+        is_first_speaker: bool
+    ) -> str:
+        """
+        生成智能的备用回复，基于对话上下文和居民特征，包括自己的历史发言
+        """
+        import random
+        
+        agent_name = agent_info.get("name", "居民")
+        personality = agent_info.get("personality", "友好")
+        occupation = agent_info.get("occupation", "居民")
+        
+        # 分析原始话题的关键词
+        topic_keywords = self._extract_topic_keywords(original_topic)
+        
+        # 检查是否有自己的历史发言，避免重复
+        has_spoken_before = len(agent_own_history) > 0
+        
+        if is_first_speaker:
+            # 第一个发言的居民，主要回应原始话题
+            if has_spoken_before:
+                # 如果之前说过话，可以引用或补充
+                if "发展" in topic_keywords or "社群" in topic_keywords:
+                    responses = [
+                        f"我是{agent_name}，之前我也关注过这个话题，现在我想补充一些新的想法...",
+                        f"我是{agent_name}，基于我之前的观察，我觉得社群发展确实有了新的变化。",
+                        f"大家好！我是{agent_name}，结合我之前的经验，我想分享一些关于社群发展的看法。"
+                    ]
+                else:
+                    responses = [
+                        f"我是{agent_name}，这个话题让我想起了之前的一些讨论，我想从新的角度来看。",
+                        f"我是{agent_name}，虽然之前我们聊过类似的话题，但今天我有了新的想法。",
+                        f"大家好！我是{agent_name}，基于我之前的思考，我想分享一些新的观点。"
+                    ]
+            else:
+                # 第一次发言，按原来的逻辑
+                if "发展" in topic_keywords or "社群" in topic_keywords:
+                    responses = [
+                        f"我是{agent_name}，作为{occupation}，我觉得我们社群的发展还是很不错的！大家都很积极参与各种活动。",
+                        f"嗨！我是{agent_name}，从我{personality}的角度来看，社群最近的氛围越来越好了，邻里关系也更和谐。",
+                        f"大家好！我是{agent_name}，我觉得我们社群在教育、健康等方面都有不少进步，值得高兴！"
+                    ]
+                elif "天气" in topic_keywords:
+                    responses = [
+                        f"我是{agent_name}，确实！今天天气特别好，很适合出门活动呢！",
+                        f"是啊！我是{agent_name}，这样的好天气让人心情都变好了，我们可以组织一些户外活动。",
+                        f"我是{agent_name}，天气好的时候总是让人精神焕发，社群里的大家也都更有活力了！"
+                    ]
+                elif "计划" in topic_keywords or "周末" in topic_keywords:
+                    responses = [
+                        f"我是{agent_name}，周末我打算和邻居们一起做些有意义的事情，比如社区志愿活动。",
+                        f"我是{agent_name}，作为{occupation}，我周末想组织一些有益的活动，让大家都能参与进来。",
+                        f"我是{agent_name}，周末是放松和交流的好时机，我们可以一起规划一些有趣的事情！"
+                    ]
+                elif "活动" in topic_keywords:
+                    responses = [
+                        f"我是{agent_name}，我觉得组织活动是个好主意！可以增进大家的感情，让社群更有凝聚力。",
+                        f"我是{agent_name}，作为{occupation}，我很支持组织各种活动，这对社群发展很有帮助。",
+                        f"我是{agent_name}，活动能让大家更好地了解彼此，我愿意积极参与和协助组织！"
+                    ]
+                else:
+                    responses = [
+                        f"我是{agent_name}，对于这个话题，我觉得很有意思！作为{occupation}，我想分享一下我的看法。",
+                        f"大家好！我是{agent_name}，这个话题让我想到了很多，我们可以深入讨论一下。",
+                        f"我是{agent_name}，从我{personality}的角度来看，这确实是个值得关注的话题。"
+                    ]
+        else:
+            # 后续发言的居民，需要回应前面的对话
+            if current_conversation:
+                last_speaker = current_conversation[-1].split(":")[0] if ":" in current_conversation[-1] else "前面的朋友"
+                last_content = current_conversation[-1].split(":", 1)[1].strip() if ":" in current_conversation[-1] else ""
+                
+                # 如果之前说过话，可以引用自己的观点
+                if has_spoken_before:
+                    responses = [
+                        f"我是{agent_name}，{last_speaker}的观点很有意思，结合我之前的想法，我觉得...",
+                        f"我是{agent_name}，听了{last_speaker}的分享，让我想起了我之前提到的一些观点，现在我想进一步补充...",
+                        f"我是{agent_name}，{last_speaker}说得很好，这和我之前的思考有些相似，我想从另一个角度来看..."
+                    ]
+                else:
+                    # 基于前面的发言内容生成回应
+                    if "同意" in last_content or "支持" in last_content:
+                        responses = [
+                            f"我也同意{last_speaker}的观点！我是{agent_name}，我想补充一点...",
+                            f"是的，{last_speaker}说得很对。我是{agent_name}，从{occupation}的角度来看，这确实很重要。",
+                            f"我是{agent_name}，{last_speaker}的想法很好，我们可以一起努力实现这些目标。"
+                        ]
+                    elif "活动" in last_content or "组织" in last_content:
+                        responses = [
+                            f"我是{agent_name}，听了{last_speaker}的建议，我觉得我们可以从小事做起，逐步扩大活动规模。",
+                            f"好主意！我是{agent_name}，作为{occupation}，我可以贡献一些专业知识来支持这些活动。",
+                            f"我是{agent_name}，{last_speaker}提到的活动让我很感兴趣，我愿意积极参与！"
+                        ]
+                    else:
+                        responses = [
+                            f"我是{agent_name}，听了{last_speaker}的分享，我也想说说我的想法...",
+                            f"有趣的观点！我是{agent_name}，我想从另一个角度来看这个问题。",
+                            f"我是{agent_name}，{last_speaker}说得很有道理，让我想到了一些相关的经历。"
+                        ]
+            else:
+                responses = [
+                    f"我是{agent_name}，虽然我不是第一个发言，但我也想分享一下我的看法。",
+                    f"我是{agent_name}，作为{occupation}，我觉得这个话题很值得讨论。",
+                    f"大家好！我是{agent_name}，听了前面的讨论，我也有一些想法要分享。"
+                ]
+        
+        return random.choice(responses)
+    
+    def _extract_topic_keywords(self, topic: str) -> List[str]:
+        """从话题中提取关键词"""
+        keywords = []
+        topic_lower = topic.lower()
+        
+        keyword_list = [
+            "发展", "社群", "天气", "计划", "周末", "活动", "组织", "讨论", 
+            "建议", "想法", "问题", "解决", "改善", "提升", "合作", "参与"
+        ]
+        
+        for keyword in keyword_list:
+            if keyword in topic_lower:
+                keywords.append(keyword)
+        
+        return keywords
     
     async def analyze_community(
         self,

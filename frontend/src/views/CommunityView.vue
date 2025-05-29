@@ -72,7 +72,7 @@
                 <i class="fas fa-bolt"></i>
               </div>
               <div class="stat-content">
-                <div class="stat-value">{{ Math.round(stats?.activity || 0) }}%</div>
+                <div class="stat-value">{{ Math.round(calculateActivity()) }}%</div>
                 <div class="stat-label">活跃度</div>
               </div>
               <div class="stat-glow"></div>
@@ -85,6 +85,39 @@
               <div class="stat-content">
                 <div class="stat-value">{{ Math.round(stats?.happiness || 0) }}%</div>
                 <div class="stat-label">幸福指数</div>
+              </div>
+              <div class="stat-glow"></div>
+            </div>
+            
+            <div class="stat-card neon-card">
+              <div class="stat-icon health">
+                <i class="fas fa-heartbeat"></i>
+              </div>
+              <div class="stat-content">
+                <div class="stat-value">{{ Math.round(stats?.health || 0) }}%</div>
+                <div class="stat-label">健康度</div>
+              </div>
+              <div class="stat-glow"></div>
+            </div>
+            
+            <div class="stat-card neon-card">
+              <div class="stat-icon education">
+                <i class="fas fa-graduation-cap"></i>
+              </div>
+              <div class="stat-content">
+                <div class="stat-value">{{ Math.round(stats?.education || 0) }}%</div>
+                <div class="stat-label">教育水平</div>
+              </div>
+              <div class="stat-glow"></div>
+            </div>
+            
+            <div class="stat-card neon-card">
+              <div class="stat-icon economy">
+                <i class="fas fa-coins"></i>
+              </div>
+              <div class="stat-content">
+                <div class="stat-value">{{ Math.round(stats?.economy || 0) }}%</div>
+                <div class="stat-label">经济状况</div>
               </div>
               <div class="stat-glow"></div>
             </div>
@@ -163,6 +196,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
+import { storeToRefs } from 'pinia';
 import { useCommunityStore } from '../stores/community';
 import { useAppStore } from '../stores/app';
 import { GlassPanel, NeonButton, ParticleBackground, GameInput, StatusIndicator } from '../components/ui';
@@ -174,7 +208,7 @@ const appStore = useAppStore();
 // 响应式数据
 const commandInput = ref('');
 
-// 计算属性
+// 使用storeToRefs保持响应性
 const {
   stats,
   agents,
@@ -183,7 +217,7 @@ const {
   totalAgents,
   averageMood,
   recentEvents
-} = communityStore;
+} = storeToRefs(communityStore);
 
 // 快捷指令配置
 const quickCommands = [
@@ -287,6 +321,20 @@ const getImpactLabel = (key: string) => {
   return labels[key as keyof typeof labels] || key;
 };
 
+// 计算活跃度（基于模拟状态和居民数据）
+const calculateActivity = () => {
+  if (!stats.value) return 0;
+  
+  // 基于幸福度、健康度和经济状况计算活跃度
+  const happiness = stats.value.happiness || 0;
+  const health = stats.value.health || 0;
+  const economy = stats.value.economy || 0;
+  
+  // 活跃度 = (幸福度 * 0.4 + 健康度 * 0.3 + 经济状况 * 0.3)
+  const activity = (happiness * 0.4 + health * 0.3 + economy * 0.3);
+  return Math.max(0, Math.min(100, activity));
+};
+
 // 格式化时间
 const formatTime = (timestamp: string) => {
   const date = new Date(timestamp);
@@ -302,12 +350,23 @@ const formatTime = (timestamp: string) => {
 
 // 组件挂载
 onMounted(async () => {
-  // 加载初始数据
-  await Promise.all([
-    communityStore.fetchCommunityStatus(),
-    communityStore.fetchAgents(),
-    communityStore.fetchEvents()
-  ]);
+  console.log('🎮 CommunityView 组件挂载，开始加载数据...');
+  
+  try {
+    // 加载初始数据
+    await Promise.all([
+      communityStore.fetchCommunityStatus(),
+      communityStore.fetchAgents(),
+      communityStore.fetchEvents()
+    ]);
+    
+    console.log('✅ 数据加载完成');
+    console.log('📊 社群统计:', stats.value);
+    console.log('👥 AI居民数量:', agents.value?.length || 0);
+    console.log('📝 事件数量:', events.value?.length || 0);
+  } catch (error) {
+    console.error('❌ 数据加载失败:', error);
+  }
 });
 </script>
 
@@ -489,8 +548,9 @@ onMounted(async () => {
 
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 16px;
+  margin-top: 16px;
 }
 
 .stat-card {
@@ -541,6 +601,24 @@ onMounted(async () => {
   background: linear-gradient(135deg, #4facfe, #00f2fe);
   color: white;
   box-shadow: 0 0 24px rgba(79, 172, 254, 0.4);
+}
+
+.stat-icon.health {
+  background: linear-gradient(135deg, #ff6b6b, #ff5722);
+  color: white;
+  box-shadow: 0 0 24px rgba(255, 107, 107, 0.4);
+}
+
+.stat-icon.education {
+  background: linear-gradient(135deg, #ffd700, #ffb347);
+  color: white;
+  box-shadow: 0 0 24px rgba(255, 215, 0, 0.4);
+}
+
+.stat-icon.economy {
+  background: linear-gradient(135deg, #4ecdc4, #44a08d);
+  color: white;
+  box-shadow: 0 0 24px rgba(78, 205, 196, 0.4);
 }
 
 .stat-content {

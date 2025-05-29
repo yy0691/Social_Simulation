@@ -1,0 +1,512 @@
+/* 最终样式增强 - AI社群模拟小游戏 */
+
+/* 全局滚动条美化 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, var(--neon-blue), var(--electric-blue));
+  border-radius: 4px;
+  box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, var(--electric-blue), var(--neon-purple));
+  box-shadow: 0 0 15px rgba(0, 212, 255, 0.5);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* 选择文本样式 */
+::selection {
+  background: rgba(0, 212, 255, 0.3);
+  color: var(--text-primary);
+}
+
+::-moz-selection {
+  background: rgba(0, 212, 255, 0.3);
+  color: var(--text-primary);
+}
+
+/* 焦点轮廓优化 */
+*:focus {
+  outline: none;
+}
+
+*:focus-visible {
+  outline: 2px solid var(--neon-blue);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* 页面加载时的渐入效果 */
+.app-container {
+  animation: appFadeIn 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes appFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* 增强的阴影系统 */
+.shadow-sm {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.shadow-md {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.shadow-lg {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.shadow-xl {
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.25);
+}
+
+.shadow-neon {
+  box-shadow: 
+    0 0 20px rgba(0, 212, 255, 0.3),
+    0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.shadow-neon-purple {
+  box-shadow: 
+    0 0 20px rgba(139, 92, 246, 0.3),
+    0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* 文字发光效果 */
+.text-glow {
+  text-shadow: 0 0 10px currentColor;
+}
+
+.text-glow-blue {
+  color: var(--neon-blue);
+  text-shadow: 0 0 15px rgba(0, 212, 255, 0.5);
+}
+
+.text-glow-purple {
+  color: var(--neon-purple);
+  text-shadow: 0 0 15px rgba(139, 92, 246, 0.5);
+}
+
+/* 边框发光效果 */
+.border-glow {
+  border: 1px solid var(--neon-blue);
+  box-shadow: 
+    0 0 10px rgba(0, 212, 255, 0.3),
+    inset 0 0 10px rgba(0, 212, 255, 0.1);
+}
+
+.border-glow-purple {
+  border: 1px solid var(--neon-purple);
+  box-shadow: 
+    0 0 10px rgba(139, 92, 246, 0.3),
+    inset 0 0 10px rgba(139, 92, 246, 0.1);
+}
+
+/* 背景渐变增强 */
+.bg-gradient-blue {
+  background: linear-gradient(135deg, 
+    rgba(0, 212, 255, 0.1) 0%, 
+    rgba(59, 130, 246, 0.05) 100%);
+}
+
+.bg-gradient-purple {
+  background: linear-gradient(135deg, 
+    rgba(139, 92, 246, 0.1) 0%, 
+    rgba(168, 85, 247, 0.05) 100%);
+}
+
+.bg-gradient-dark {
+  background: linear-gradient(135deg, 
+    rgba(26, 32, 44, 0.9) 0%, 
+    rgba(45, 55, 72, 0.8) 100%);
+}
+
+/* 交互状态增强 */
+.interactive {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+.interactive:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.1);
+}
+
+.interactive:active {
+  transform: translateY(0);
+  filter: brightness(0.95);
+}
+
+/* 脉冲动画变体 */
+.pulse-slow {
+  animation: pulse 3s infinite;
+}
+
+.pulse-fast {
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+}
+
+/* 呼吸灯效果 */
+.breathing {
+  animation: breathing 4s infinite;
+}
+
+@keyframes breathing {
+  0%, 100% {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.02);
+  }
+}
+
+/* 浮动效果 */
+.floating {
+  animation: floating 6s ease-in-out infinite;
+}
+
+@keyframes floating {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* 旋转发光效果 */
+.rotating-glow {
+  position: relative;
+  overflow: hidden;
+}
+
+.rotating-glow::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: conic-gradient(
+    from 0deg,
+    transparent,
+    var(--neon-blue),
+    transparent,
+    var(--neon-purple),
+    transparent
+  );
+  animation: rotateGlow 4s linear infinite;
+  opacity: 0.3;
+  z-index: -1;
+}
+
+@keyframes rotateGlow {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* 数据可视化增强 */
+.chart-bar {
+  background: linear-gradient(90deg, 
+    var(--neon-blue) 0%, 
+    var(--electric-blue) 100%);
+  border-radius: 2px;
+  position: relative;
+  overflow: hidden;
+}
+
+.chart-bar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(255, 255, 255, 0.3), 
+    transparent);
+  animation: chartShine 2s infinite;
+}
+
+@keyframes chartShine {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* 网格背景效果 */
+.grid-background {
+  background-image: 
+    linear-gradient(rgba(0, 212, 255, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 212, 255, 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+  position: relative;
+}
+
+.grid-background::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at center, 
+    transparent 0%, 
+    rgba(0, 0, 0, 0.1) 100%);
+  pointer-events: none;
+}
+
+/* 霓虹线条效果 */
+.neon-line {
+  height: 2px;
+  background: linear-gradient(90deg, 
+    transparent, 
+    var(--neon-blue), 
+    transparent);
+  box-shadow: 0 0 10px var(--neon-blue);
+  animation: neonPulse 2s infinite;
+}
+
+@keyframes neonPulse {
+  0%, 100% {
+    opacity: 0.5;
+    box-shadow: 0 0 5px var(--neon-blue);
+  }
+  50% {
+    opacity: 1;
+    box-shadow: 0 0 20px var(--neon-blue);
+  }
+}
+
+/* 粒子轨迹效果 */
+.particle-trail {
+  position: relative;
+  overflow: hidden;
+}
+
+.particle-trail::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: -10px;
+  width: 4px;
+  height: 4px;
+  background: var(--neon-blue);
+  border-radius: 50%;
+  box-shadow: 0 0 10px var(--neon-blue);
+  animation: particleTrail 3s linear infinite;
+}
+
+@keyframes particleTrail {
+  0% {
+    left: -10px;
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    left: calc(100% + 10px);
+    opacity: 0;
+  }
+}
+
+/* 全息效果 */
+.holographic {
+  background: linear-gradient(45deg, 
+    rgba(0, 212, 255, 0.1),
+    rgba(139, 92, 246, 0.1),
+    rgba(236, 72, 153, 0.1),
+    rgba(0, 212, 255, 0.1));
+  background-size: 400% 400%;
+  animation: holographicShift 8s ease-in-out infinite;
+  position: relative;
+}
+
+.holographic::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent,
+    transparent 2px,
+    rgba(255, 255, 255, 0.03) 2px,
+    rgba(255, 255, 255, 0.03) 4px
+  );
+  pointer-events: none;
+}
+
+@keyframes holographicShift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+/* 能量波纹效果 */
+.energy-ripple {
+  position: relative;
+  overflow: hidden;
+}
+
+.energy-ripple::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border: 2px solid var(--neon-blue);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  animation: energyRipple 2s infinite;
+  opacity: 0;
+}
+
+@keyframes energyRipple {
+  0% {
+    width: 0;
+    height: 0;
+    opacity: 1;
+  }
+  100% {
+    width: 200px;
+    height: 200px;
+    opacity: 0;
+  }
+}
+
+/* 响应式增强 */
+@media (max-width: 768px) {
+  .rotating-glow::before {
+    animation-duration: 6s;
+  }
+  
+  .particle-trail::after {
+    animation-duration: 4s;
+  }
+  
+  .holographic {
+    animation-duration: 12s;
+  }
+}
+
+/* 性能优化 */
+@media (prefers-reduced-motion: reduce) {
+  .pulse-slow,
+  .pulse-fast,
+  .breathing,
+  .floating,
+  .rotating-glow::before,
+  .chart-bar::after,
+  .neon-line,
+  .particle-trail::after,
+  .holographic,
+  .energy-ripple::before {
+    animation: none;
+  }
+  
+  .interactive:hover {
+    transform: none;
+  }
+}
+
+/* 高对比度模式 */
+@media (prefers-contrast: high) {
+  .shadow-neon,
+  .shadow-neon-purple {
+    box-shadow: 0 0 0 2px currentColor;
+  }
+  
+  .border-glow,
+  .border-glow-purple {
+    box-shadow: none;
+    border-width: 2px;
+  }
+  
+  .text-glow,
+  .text-glow-blue,
+  .text-glow-purple {
+    text-shadow: none;
+    font-weight: bold;
+  }
+}
+
+/* 打印优化 */
+@media print {
+  .shadow-sm,
+  .shadow-md,
+  .shadow-lg,
+  .shadow-xl,
+  .shadow-neon,
+  .shadow-neon-purple,
+  .border-glow,
+  .border-glow-purple {
+    box-shadow: none;
+    border: 1px solid #000;
+  }
+  
+  .bg-gradient-blue,
+  .bg-gradient-purple,
+  .bg-gradient-dark {
+    background: #fff;
+  }
+  
+  .text-glow,
+  .text-glow-blue,
+  .text-glow-purple {
+    color: #000;
+    text-shadow: none;
+  }
+} 

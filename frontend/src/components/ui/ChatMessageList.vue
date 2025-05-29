@@ -264,7 +264,9 @@ defineExpose({
   display: flex;
   flex-direction: column;
   height: 100%;
+  min-height: 0;
   position: relative;
+  overflow: hidden;
 }
 
 .load-more-container {
@@ -276,10 +278,13 @@ defineExpose({
 .messages-container {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
   padding: 1rem;
-  max-height: v-bind(maxHeight);
+  height: 100%;
+  min-height: 0;
   scrollbar-width: thin;
   scrollbar-color: rgba(102, 126, 234, 0.3) transparent;
+  scroll-behavior: smooth;
 }
 
 .messages-container::-webkit-scrollbar {

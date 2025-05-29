@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>真实聊天系统测试</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: #fff;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #00d4ff;
+            text-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+            margin-bottom: 10px;
+        }
+        
+        .chat-container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            height: 500px;
+            overflow-y: auto;
+        }
+        
+        .message {
+            margin-bottom: 15px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            max-width: 80%;
+            position: relative;
+            animation: fadeIn 0.3s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .message.user {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            margin-left: auto;
+            text-align: right;
+        }
+        
+        .message.ai {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            margin-right: auto;
+        }
+        
+        .message.agent {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            margin-right: auto;
+        }
+        
+        .message.system {
+            background: linear-gradient(135deg, #43e97b, #38f9d7);
+            margin: 0 auto;
+            text-align: center;
+            max-width: 90%;
+        }
+        
+        .message-header {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+        
+        .message-content {
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        
+        .input-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .message-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: none;
+            border-radius: 25px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            font-size: 14px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .message-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .send-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            background: linear-gradient(135deg, #00d4ff, #8b5cf6);
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .send-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 212, 255, 0.3);
+        }
+        
+        .send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .test-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .test-btn {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .test-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #00d4ff;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+        
+        .loading {
+            text-align: center;
+            color: #00d4ff;
+            font-style: italic;
+        }
+        
+        .agent-info {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 15px;
+            font-size: 12px;
+        }
+        
+        .agent-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+        
+        .agent-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .agent-name {
+            font-weight: bold;
+            color: #00d4ff;
+            margin-bottom: 5px;
+        }
+        
+        .agent-details {
+            font-size: 11px;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 真实聊天系统测试</h1>
+            <p>测试AI成员的自然发言机制 - 观察个性化、时间差异和真实对话</p>
+        </div>
+        
+        <!-- 统计信息 -->
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-value" id="total-messages">0</div>
+                <div class="stat-label">总消息数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="agent-responses">0</div>
+                <div class="stat-label">AI成员回复</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="active-agents">0</div>
+                <div class="stat-label">活跃成员</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="avg-response-time">0s</div>
+                <div class="stat-label">平均回复时间</div>
+            </div>
+        </div>
+        
+        <!-- AI成员信息 -->
+        <div class="agent-info">
+            <h3>🎭 AI成员档案</h3>
+            <div class="agent-list" id="agent-list">
+                <!-- 动态加载 -->
+            </div>
+        </div>
+        
+        <!-- 快速测试按钮 -->
+        <div class="test-buttons">
+            <button class="test-btn" onclick="sendTestMessage('大家好！今天天气真不错')">😊 日常问候</button>
+            <button class="test-btn" onclick="sendTestMessage('我想组织一个读书分享会，大家觉得怎么样？')">📚 教育话题</button>
+            <button class="test-btn" onclick="sendTestMessage('最近身体不太舒服，有什么健康建议吗？')">🏥 健康话题</button>
+            <button class="test-btn" onclick="sendTestMessage('有人对艺术感兴趣吗？我想办个画展')">🎨 艺术话题</button>
+            <button class="test-btn" onclick="sendTestMessage('社群建设方面，大家有什么建议？')">🏗️ 建设话题</button>
+            <button class="test-btn" onclick="sendTestMessage('大家对未来有什么期待吗？')">🌟 开放话题</button>
+        </div>
+        
+        <!-- 聊天区域 -->
+        <div class="chat-container" id="chat-container">
+            <div class="loading">正在加载聊天记录...</div>
+        </div>
+        
+        <!-- 输入区域 -->
+        <div class="input-container">
+            <input type="text" class="message-input" id="message-input" 
+                   placeholder="输入消息测试AI成员的真实反应..." 
+                   onkeypress="handleKeyPress(event)">
+            <button class="send-btn" id="send-btn" onclick="sendMessage()">发送</button>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://127.0.0.1:8000';
+        let messageCount = 0;
+        let agentResponseCount = 0;
+        let activeAgents = new Set();
+        let responseTimes = [];
+        let lastMessageTime = null;
+        
+        // 页面加载时初始化
+        window.addEventListener('load', () => {
+            loadAgentProfiles();
+            loadMessages();
+            // 每5秒刷新一次消息
+            setInterval(loadMessages, 5000);
+        });
+        
+        async function loadAgentProfiles() {
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/community/agents`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const agents = data.data.agents;
+                    const agentList = document.getElementById('agent-list');
+                    
+                    agentList.innerHTML = agents.map(agent => `
+                        <div class="agent-card">
+                            <div class="agent-name">${agent.name}</div>
+                            <div class="agent-details">
+                                ${agent.personality} | ${agent.occupation}<br>
+                                ${agent.age}岁 | 幸福度: ${Math.round(agent.happiness)}%
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('加载AI成员信息失败:', error);
+            }
+        }
+        
+        async function loadMessages() {
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/chat/messages?limit=20`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const messages = data.data.messages;
+                    displayMessages(messages);
+                    updateStats(messages);
+                }
+            } catch (error) {
+                console.error('加载消息失败:', error);
+            }
+        }
+        
+        function displayMessages(messages) {
+            const container = document.getElementById('chat-container');
+            
+            container.innerHTML = messages.map(msg => {
+                let messageClass = 'message';
+                let header = '';
+                
+                if (msg.isUser) {
+                    messageClass += ' user';
+                    header = '🎮 玩家';
+                } else if (msg.isAI) {
+                    messageClass += ' ai';
+                    header = '🤖 AI助手';
+                } else if (msg.isAgent) {
+                    messageClass += ' agent';
+                    header = `👤 ${msg.sender}`;
+                } else {
+                    messageClass += ' system';
+                    header = '📢 系统';
+                }
+                
+                const time = new Date(msg.timestamp).toLocaleTimeString();
+                
+                return `
+                    <div class="${messageClass}">
+                        <div class="message-header">${header} - ${time}</div>
+                        <div class="message-content">${msg.content}</div>
+                    </div>
+                `;
+            }).join('');
+            
+            // 滚动到底部
+            container.scrollTop = container.scrollHeight;
+        }
+        
+        function updateStats(messages) {
+            messageCount = messages.length;
+            agentResponseCount = messages.filter(msg => msg.isAgent).length;
+            
+            // 统计活跃成员
+            activeAgents.clear();
+            messages.forEach(msg => {
+                if (msg.isAgent) {
+                    activeAgents.add(msg.sender);
+                }
+            });
+            
+            // 计算平均回复时间（简化计算）
+            const avgTime = responseTimes.length > 0 
+                ? responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length 
+                : 0;
+            
+            // 更新显示
+            document.getElementById('total-messages').textContent = messageCount;
+            document.getElementById('agent-responses').textContent = agentResponseCount;
+            document.getElementById('active-agents').textContent = activeAgents.size;
+            document.getElementById('avg-response-time').textContent = `${avgTime.toFixed(1)}s`;
+        }
+        
+        async function sendMessage() {
+            const input = document.getElementById('message-input');
+            const sendBtn = document.getElementById('send-btn');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // 禁用输入
+            input.disabled = true;
+            sendBtn.disabled = true;
+            sendBtn.textContent = '发送中...';
+            
+            try {
+                lastMessageTime = Date.now();
+                
+                const response = await fetch(`${API_BASE}/api/v1/chat/send`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ message })
+                });
+                
+                if (response.ok) {
+                    input.value = '';
+                    // 立即刷新消息
+                    setTimeout(loadMessages, 1000);
+                    
+                    // 监控AI成员回复
+                    monitorAgentResponses();
+                } else {
+                    alert('发送失败，请检查服务器连接');
+                }
+            } catch (error) {
+                console.error('发送消息失败:', error);
+                alert('发送失败: ' + error.message);
+            } finally {
+                // 恢复输入
+                input.disabled = false;
+                sendBtn.disabled = false;
+                sendBtn.textContent = '发送';
+                input.focus();
+            }
+        }
+        
+        function sendTestMessage(message) {
+            document.getElementById('message-input').value = message;
+            sendMessage();
+        }
+        
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+        
+        function monitorAgentResponses() {
+            let checkCount = 0;
+            const maxChecks = 12; // 最多检查60秒
+            
+            const checkInterval = setInterval(() => {
+                checkCount++;
+                loadMessages();
+                
+                if (checkCount >= maxChecks) {
+                    clearInterval(checkInterval);
+                }
+            }, 5000);
+        }
+        
+        // 添加一些实时效果
+        setInterval(() => {
+            // 随机高亮活跃成员
+            const agentCards = document.querySelectorAll('.agent-card');
+            agentCards.forEach(card => {
+                card.style.border = '1px solid rgba(255, 255, 255, 0.2)';
+            });
+            
+            if (agentCards.length > 0) {
+                const randomCard = agentCards[Math.floor(Math.random() * agentCards.length)];
+                randomCard.style.border = '1px solid rgba(0, 212, 255, 0.5)';
+            }
+        }, 3000);
+    </script>
+</body>
+</html> 

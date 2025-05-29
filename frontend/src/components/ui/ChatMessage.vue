@@ -48,6 +48,7 @@ interface Props {
   timestamp: string | Date
   isUser?: boolean
   isAI?: boolean
+  isAgent?: boolean
   status?: 'sending' | 'sent' | 'error'
   showStatus?: boolean
 }
@@ -55,6 +56,7 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   isUser: false,
   isAI: false,
+  isAgent: false,
   status: 'sent',
   showStatus: false
 })
@@ -67,19 +69,22 @@ const emit = defineEmits<{
 const messageClass = computed(() => ({
   'message-user': props.isUser,
   'message-ai': props.isAI,
-  'message-other': !props.isUser && !props.isAI
+  'message-agent': props.isAgent,
+  'message-other': !props.isUser && !props.isAI && !props.isAgent
 }))
 
 const avatarClass = computed(() => ({
   'avatar-user': props.isUser,
   'avatar-ai': props.isAI,
-  'avatar-other': !props.isUser && !props.isAI
+  'avatar-agent': props.isAgent,
+  'avatar-other': !props.isUser && !props.isAI && !props.isAgent
 }))
 
 const bubbleClass = computed(() => ({
   'bubble-user': props.isUser,
   'bubble-ai': props.isAI,
-  'bubble-other': !props.isUser && !props.isAI,
+  'bubble-agent': props.isAgent,
+  'bubble-other': !props.isUser && !props.isAI && !props.isAgent,
   'bubble-sending': props.status === 'sending',
   'bubble-error': props.status === 'error'
 }))
@@ -87,6 +92,7 @@ const bubbleClass = computed(() => ({
 const avatarIcon = computed(() => {
   if (props.isUser) return 'fas fa-user'
   if (props.isAI) return 'fas fa-robot'
+  if (props.isAgent) return 'fas fa-user-friends'
   return 'fas fa-user-circle'
 })
 
@@ -158,6 +164,11 @@ const onMessageClick = () => {
 .avatar-ai {
   background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
   box-shadow: 0 4px 15px rgba(240, 147, 251, 0.4);
+}
+
+.avatar-agent {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
 }
 
 .avatar-other {
@@ -235,6 +246,14 @@ const onMessageClick = () => {
   backdrop-filter: blur(10px);
   position: relative;
   overflow: hidden;
+}
+
+.bubble-agent {
+  background: rgba(79, 172, 254, 0.1);
+  border: 1px solid rgba(79, 172, 254, 0.2);
+  color: var(--color-text-primary, #1f2937);
+  border-bottom-left-radius: 0.25rem;
+  backdrop-filter: blur(10px);
 }
 
 .bubble-other {
@@ -336,6 +355,11 @@ const onMessageClick = () => {
 
 .dark .bubble-ai {
   background: rgba(240, 147, 251, 0.15);
+  color: var(--color-text-primary, #f9fafb);
+}
+
+.dark .bubble-agent {
+  background: rgba(79, 172, 254, 0.15);
   color: var(--color-text-primary, #f9fafb);
 }
 

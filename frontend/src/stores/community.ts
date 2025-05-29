@@ -20,7 +20,18 @@ export const useCommunityStore = defineStore('community', () => {
   // 计算属性
   const isHealthy = computed(() => {
     if (!stats.value) return false;
-    return stats.value.happiness > 50 && stats.value.activity > 30;
+    // 使用幸福度和健康度来判断社群是否健康
+    return stats.value.happiness > 50 && stats.value.health > 30;
+  });
+
+  // 计算活跃度
+  const activityLevel = computed(() => {
+    if (!stats.value) return 0;
+    // 基于幸福度、健康度和经济状况计算活跃度
+    const happiness = stats.value.happiness || 0;
+    const health = stats.value.health || 0;
+    const economy = stats.value.economy || 0;
+    return Math.round(happiness * 0.4 + health * 0.3 + economy * 0.3);
   });
 
   const totalAgents = computed(() => agents.value.length);
@@ -41,11 +52,17 @@ export const useCommunityStore = defineStore('community', () => {
       isLoading.value = true;
       error.value = null;
       
-      stats.value = await api.getCommunityStatus();
+      console.log('🚀 开始获取社群状态...');
+      const result = await api.getCommunityStatus();
+      console.log('📊 API返回的社群状态:', result);
+      
+      stats.value = result;
       lastUpdated.value = new Date();
+      
+      console.log('✅ 社群状态更新完成:', stats.value);
     } catch (err) {
       error.value = err instanceof Error ? err.message : '获取社群状态失败';
-      console.error('获取社群状态失败:', err);
+      console.error('❌ 获取社群状态失败:', err);
     } finally {
       isLoading.value = false;
     }
@@ -96,7 +113,7 @@ export const useCommunityStore = defineStore('community', () => {
       // 更新本地状态
       if (stats.value && response.success) {
         stats.value.happiness = response.new_stats.happiness;
-        stats.value.activity = response.new_stats.activity;
+        // 注意：activity字段不存在于CommunityStats中，由计算属性提供
       }
       
       // 刷新事件列表
@@ -168,6 +185,7 @@ export const useCommunityStore = defineStore('community', () => {
     
     // 计算属性
     isHealthy,
+    activityLevel,
     totalAgents,
     averageMood,
     recentEvents,

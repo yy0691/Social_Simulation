@@ -1,39 +1,56 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import GameMain from '../views/GameMain.vue'
+import CommunityView from '../views/CommunityView.vue'
+import ChatView from '../views/ChatView.vue'
+import InvitationView from '../views/InvitationView.vue'
+import SettingsView from '../views/SettingsView.vue'
+import StyleShowcase from '../views/StyleShowcase.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: '/',
-      name: 'game',
-      component: GameMain,
+      name: 'community',
+      component: CommunityView,
       meta: {
-        title: 'AI社群模拟小游戏'
+        title: 'AI社群模拟小游戏 - 社群中心'
       }
     },
     {
       path: '/community',
-      name: 'community',
-      component: GameMain,
-      meta: {
-        title: '社群中心'
-      }
+      name: 'community-redirect',
+      redirect: '/'
     },
     {
       path: '/chat',
       name: 'chat', 
-      component: GameMain,
+      component: ChatView,
       meta: {
-        title: '聊天室'
+        title: 'AI社群模拟小游戏 - 聊天室'
+      }
+    },
+    {
+      path: '/invitation',
+      name: 'invitation',
+      component: InvitationView,
+      meta: {
+        title: 'AI社群模拟小游戏 - 邀请管理'
       }
     },
     {
       path: '/settings',
       name: 'settings',
-      component: GameMain,
+      component: SettingsView,
       meta: {
-        title: '设置'
+        title: 'AI社群模拟小游戏 - 设置'
+      }
+    },
+    {
+      path: '/showcase',
+      name: 'showcase',
+      component: StyleShowcase,
+      meta: {
+        title: 'AI社群模拟小游戏 - 样式展示'
       }
     }
   ]
